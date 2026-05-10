@@ -1,0 +1,126 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CodeQL Security Analysis — Next.js (TypeScript)
+#
+# WHAT IT DOES:
+#   GitHub's CodeQL engine scans your source code for:
+#     • SQL / NoSQL injection
+#     • XSS vulnerabilities
+#     • Path traversal
+#     • Prototype pollution
+#     • Unsafe use of eval / dangerous APIs
+#     • … and 400+ other security queries
+#
+# WHEN IT RUNS:
+#   1. Push to `main`          →  after every merge, keep main always clean
+#   2. PR targeting `main`     →  catches vulns before they land in main
+#   3. Weekly schedule (Mon)   →  catches newly published CVE queries
+#      (CodeQL query packs are updated independently of your code)
+#
+# NOTE:
+#   Results appear in:  GitHub → Security → Code scanning alerts
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: 🔒 CodeQL Security Scan
+
+on:
+  push:
+    branches:
+      - main                  # scan every merge into main
+  pull_request:
+    branches:
+      - main                  # scan every PR before it merges
+    paths-ignore:             # skip if ONLY docs/config changed
+      - "**/*.md"
+      - "**/*.txt"
+      - ".github/**"
+      - "public/**"
+  schedule:
+    - cron: "0 3 * * 1"      # every Monday at 03:00 UTC
+
+# Only one scan per branch at a time — newer push cancels the older one
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write      # required to upload SARIF results
+
+jobs:
+  # ── ANALYSE ────────────────────────────────────────────────────────────────
+  analyze:
+    name: 🔍 Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - javascript-typescript   # covers .js, .jsx, .ts, .tsx (Next.js ✓)
+        # Add more languages here if your repo mixes languages, e.g.:
+        # - python
+        # - go
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── 2. Initialize CodeQL ─────────────────────────────────────────────
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+          # 'security-extended' adds extra queries on top of the default set.
+          # Options: security-extended | security-and-quality | default
+          queries: security-extended
+
+          # Optional: pin a specific CodeQL CLI version for reproducibility
+          # tools: latest
+
+      # ── 3. Auto-build ────────────────────────────────────────────────────
+      # For JavaScript/TypeScript, CodeQL doesn't need a full build — it
+      # analyses the source files directly.  The autobuild step is kept here
+      # as a safe default; it is a no-op for JS/TS projects.
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      # ── 4. Perform Analysis ──────────────────────────────────────────────
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+          # Upload SARIF results to GitHub Security tab automatically
+          upload: true
+
+  # ── DEPENDENCY REVIEW (PRs only) ──────────────────────────────────────────
+  # Blocks merging if a PR introduces a dependency with a known CVE.
+  # Requires GitHub Advanced Security OR a public repo.
+  dependency-review:
+    name: 📦 Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          # Fail the PR if any added dependency has a CRITICAL or HIGH CVE
+          fail-on-severity: high
+          # Deny licenses that are incompatible with most commercial projects
+          deny-licenses: >-
+            GPL-2.0,
+            GPL-3.0,
+            AGPL-3.0,
+            LGPL-2.0,
+            LGPL-2.1,
+            LGPL-3.0
+          # Comment a summary on the PR automatically
+          comment-summary-in-pr: always
