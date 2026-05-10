@@ -2,13 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const CYAN = new THREE.Color(0x00e5ff);
 const GOLD = new THREE.Color(0xffaa00);
-const BLACK = new THREE.Color(0x000000);
 
 // ─── Pure helpers (no React) ──────────────────────────────────────────────────
 function createScene() {
