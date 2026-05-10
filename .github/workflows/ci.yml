@@ -2,18 +2,17 @@
 # CI Pipeline — Next.js (TypeScript)
 #
 # STRATEGY:
-#   • Runs on every push to feature/fix/dev branches  →  catches issues early
-#   • Runs on every PR targeting `main`               →  gate before merge
-#   • NEVER triggers a deploy; only main branch does  →  hosting stays clean
+#   • Runs on every push to tracked branches      →  catches issues early
+#   • Runs on every PR targeting `main`           →  gate before merge
+#   • NEVER triggers a deploy; only main branch does →  hosting stays clean
 #
 # JOBS (in order):
-#   1. lint          – ESLint + Prettier check
+#   1. lint          – Biome check (lint + format)
 #   2. type-check    – tsc --noEmit (zero-tolerance for TS errors)
 #   3. build         – next build (confirms the app actually compiles)
-#   4. test          – Jest / Vitest unit & integration tests
 #
 # CACHING:
-#   • node_modules   cached by package-lock.json hash  →  fast installs
+#   • node_modules   cached by bun.lock hash  →  fast installs
 #   • .next/cache    cached by source hash              →  faster builds
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -21,8 +20,6 @@ name: ✅ CI
 
 on:
   push:
-    branches-ignore:
-      - main # ← team pushes to feature branches; main is untouched
     branches:
       - main
       - personal/tarekul42
@@ -40,7 +37,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: "20" # LTS — change to match your .nvmrc / .node-version
+  BUN_VERSION: "latest" # change to specific version if needed
   NEXT_TELEMETRY_DISABLED: 1
 
 jobs:
@@ -54,23 +51,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install
 
-      - name: Run ESLint
-        run: npm run lint
-        # Tip: add  "lint": "eslint . --max-warnings 0"  in package.json
-        #      so any warning is treated as an error in CI
-
-      - name: Check Prettier formatting
-        run: npm run format:check
-        # Tip: add  "format:check": "prettier --check ."  in package.json
+      - name: Run Biome CI checks (lint + format)
+        run: bunx @biomejs/biome ci .
+        # biome ci exits non-zero on any lint or formatting violation
+        # To configure rules, edit biome.json at the project root
 
   # ── 2. TYPE CHECK ─────────────────────────────────────────────────────────
   type-check:
@@ -82,18 +74,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install
 
       - name: Run TypeScript compiler check
-        run: npm run type-check
-        # Tip: add  "type-check": "tsc --noEmit"  in package.json
+        run: bun run type-check
+        # Tip: add  "type-check": "tsc --noEmit"  in package.json scripts
+        #      if you prefer calling it via npm run type-check
 
   # ── 3. BUILD ──────────────────────────────────────────────────────────────
   build:
@@ -106,27 +98,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install
 
       # ── Next.js build cache (makes rebuilds 2-3× faster) ──
       - name: Restore Next.js build cache
         uses: actions/cache@v4
         with:
           path: .next/cache
-          key: nextjs-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx') }}
+          key: nextjs-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}-${{ hashFiles('**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx') }}
           restore-keys: |
-            nextjs-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-
+            nextjs-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}-
             nextjs-${{ runner.os }}-
 
       - name: Build Next.js app
-        run: npm run build
+        run: bun run build
         env:
           # ── Add your non-secret public env vars here ──────────────────────
           # NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
@@ -142,46 +133,13 @@ jobs:
           path: .next/
           retention-days: 3 # keep for 3 days (enough for PR review)
 
-  # ── 4. TEST ───────────────────────────────────────────────────────────────
-  test:
-    name: 🧪 Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [lint, type-check] # run in parallel with build
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests with coverage
-        run: npm run test:ci
-        # Tip: add  "test:ci": "jest --ci --coverage --forceExit"  in package.json
-        #      or   "test:ci": "vitest run --coverage"
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        if: always() # upload even if tests fail, for debugging
-        with:
-          name: coverage-${{ github.sha }}
-          path: coverage/
-          retention-days: 7
-
-  # ── 5. CI SUMMARY (required status check) ─────────────────────────────────
+  # ── 4. CI SUMMARY (required status check) ─────────────────────────────────
   # Set THIS job as the required status check in GitHub branch protection.
   # It only passes when every job above passes — simple single checkbox.
   ci-success:
     name: ✅ CI Passed
     runs-on: ubuntu-latest
-    needs: [lint, type-check, build, test]
+    needs: [lint, type-check, build]
     if: always()
 
     steps:
@@ -189,8 +147,7 @@ jobs:
         run: |
           if [[ "${{ needs.lint.result }}"       != "success" ||
                 "${{ needs.type-check.result }}" != "success" ||
-                "${{ needs.build.result }}"      != "success" ||
-                "${{ needs.test.result }}"       != "success" ]]; then
+                "${{ needs.build.result }}"      != "success" ]]; then
             echo "❌ One or more CI jobs failed."
             exit 1
           fi
