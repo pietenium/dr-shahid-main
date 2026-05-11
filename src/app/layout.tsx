@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 
 import { Toaster } from "sonner";
+import { AppShell } from "@/components/layout/AppShell";
 import { getAppInfo } from "@/lib/api/app-info";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { RecaptchaProvider } from "@/providers/RecaptchaProvider";
@@ -62,8 +63,7 @@ export default async function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             <RecaptchaProvider>
-              {/* Header and Footer will be added in Phase 3 */}
-              <main className="flex-1">{children}</main>
+              <AppShell>{children}</AppShell>
               <Toaster
                 position="top-right"
                 richColors
