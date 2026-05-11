@@ -11,10 +11,25 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.2.0",
+    "@fortawesome/free-brands-svg-icons": "^7.2.0",
+    "@fortawesome/free-regular-svg-icons": "^7.2.0",
+    "@fortawesome/free-solid-svg-icons": "^7.2.0",
+    "@fortawesome/react-fontawesome": "^3.3.1",
+    "@hookform/resolvers": "^5.2.2",
+    "@tanstack/react-query": "^5.100.10",
+    "axios": "^1.16.0",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.38.0",
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "three": "^0.184.0"
+    "react-google-recaptcha-v3": "^1.11.0",
+    "react-hook-form": "^7.75.0",
+    "sonner": "^2.0.7",
+    "three": "^0.184.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
