@@ -1,0 +1,40 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { trackPageView } from "@/lib/api/analytics";
+
+export const AnalyticsTracker = () => {
+  const pathname = usePathname();
+  const visitorIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    // Basic persistent visitor ID (simulated)
+    if (!visitorIdRef.current) {
+      let vid = localStorage.getItem("v_id");
+      if (!vid) {
+        vid = `v_${Math.random().toString(36).substring(2, 11)}`;
+        localStorage.setItem("v_id", vid);
+      }
+      visitorIdRef.current = vid;
+    }
+
+    const track = async () => {
+      try {
+        await trackPageView({
+          page: pathname,
+          sessionId: `sess_${Date.now()}`,
+          visitorId: visitorIdRef.current || undefined,
+          referrer: document.referrer || undefined,
+        });
+      } catch (err) {
+        // Silently fail analytics
+        console.warn("Analytics tracking failed", err);
+      }
+    };
+
+    track();
+  }, [pathname]);
+
+  return null;
+};
