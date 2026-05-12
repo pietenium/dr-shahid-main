@@ -38,3 +38,11 @@ export function getInitials(name: string): string {
     .join("")
     .toUpperCase();
 }
+
+export function extractHttpStatus(error: unknown): number | undefined {
+  if (typeof error === "object" && error !== null && "response" in error) {
+    const response = (error as { response?: { status?: unknown } }).response;
+    if (typeof response?.status === "number") return response.status;
+  }
+  return undefined;
+}

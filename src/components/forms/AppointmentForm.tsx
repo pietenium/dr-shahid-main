@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
@@ -12,6 +13,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { createAppointment } from "@/lib/api/appointments";
+import { extractHttpStatus } from "@/lib/utils";
 import { useAppointmentPrefill } from "@/store/use-appointment-prefill";
 
 const appointmentSchema = z.object({
@@ -36,7 +38,6 @@ const appointmentSchema = z.object({
 type AppointmentFormData = z.infer<typeof appointmentSchema>;
 
 export const AppointmentForm = () => {
-  const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const { executeRecaptcha } = useGoogleReCaptcha();
   const { message: prefillMessage, clearPrefill } = useAppointmentPrefill();
@@ -61,16 +62,37 @@ export const AppointmentForm = () => {
     return () => clearPrefill();
   }, [clearPrefill]);
 
+  const appointmentMutation = useMutation({
+    mutationFn: createAppointment,
+    retry: false,
+    onSuccess: () => {
+      toast.success(
+        "Appointment request submitted! We will contact you soon to confirm.",
+      );
+      reset({ preferredTime: "", message: "" });
+      setSubmitted(true);
+    },
+    onError: (error) => {
+      const status = extractHttpStatus(error);
+      if (status === 429) {
+        toast.error(
+          "You've submitted too many requests. Please wait and try again.",
+        );
+      } else {
+        toast.error("Failed to submit request. Please try again later.");
+      }
+    },
+  });
+
   const onSubmit = async (data: AppointmentFormData) => {
     if (!executeRecaptcha) {
       toast.error("ReCAPTCHA not initialized. Please try again.");
       return;
     }
 
-    setLoading(true);
     try {
       const token = await executeRecaptcha("appointment_request");
-      await createAppointment({
+      appointmentMutation.mutate({
         name: data.name,
         phone: data.phone,
         email: data.email || undefined,
@@ -79,29 +101,8 @@ export const AppointmentForm = () => {
         preferredTime: data.preferredTime,
         recaptchaToken: token,
       });
-      toast.success(
-        "Appointment request submitted! We will contact you soon to confirm.",
-      );
-      reset({ preferredTime: "", message: "" });
-      setSubmitted(true);
-    } catch (error) {
-      const status =
-        typeof error === "object" &&
-        error &&
-        "response" in error &&
-        typeof (error as { response?: { status?: unknown } }).response
-          ?.status === "number"
-          ? (error as { response: { status: number } }).response.status
-          : undefined;
-      if (status === 429) {
-        toast.error(
-          "You've submitted too many requests. Please wait and try again.",
-        );
-      } else {
-        toast.error("Failed to submit request. Please try again later.");
-      }
-    } finally {
-      setLoading(false);
+    } catch (_error) {
+      toast.error("Failed to execute ReCAPTCHA. Please try again.");
     }
   };
 
@@ -213,7 +214,11 @@ export const AppointmentForm = () => {
         maxLength={500}
         {...register("message")}
       />
-      <Button type="submit" loading={loading} className="w-full h-14 text-lg">
+      <Button
+        type="submit"
+        loading={appointmentMutation.isPending}
+        className="w-full h-14 text-lg"
+      >
         Submit Appointment Request
       </Button>
       <p className="text-[10px] text-center text-text-para-light dark:text-text-para-dark opacity-40 uppercase tracking-widest">

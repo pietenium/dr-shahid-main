@@ -46,7 +46,7 @@ export function ResearchClient({
       }),
     initialData:
       !uploadType && !search && page === 1 ? initialResearch : undefined,
-    staleTime: 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 
   const setParams = (next: Record<string, string | undefined>) => {
