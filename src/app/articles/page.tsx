@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { ArticleCard } from "@/components/articles/ArticleCard";
-import { ArticleFilter } from "@/components/articles/ArticleFilter";
+import { ArticlesClient } from "@/components/articles/ArticlesClient";
 import { SectionHeading } from "@/components/shared/SectionHeading";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { Pagination } from "@/components/ui/Pagination";
-import { getArticles } from "@/lib/api/articles";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { getArticles, getCategories } from "@/lib/api/articles";
 
 export const metadata: Metadata = {
   title: "Articles & Insights",
@@ -16,29 +14,42 @@ export const metadata: Metadata = {
 export default async function ArticlesPage({
   searchParams,
 }: {
-  searchParams: { page?: string; category?: string };
+  searchParams: {
+    page?: string;
+    category?: string;
+    articleType?: string;
+    search?: string;
+  };
 }) {
   const page = Number(searchParams.page) || 1;
-  const category =
-    searchParams.category === "all" ? undefined : searchParams.category;
+  const category = searchParams.category || undefined;
+  const articleType = searchParams.articleType || undefined;
+  const search = searchParams.search || undefined;
 
   let data:
     | import("@/types/api").PaginatedData<import("@/types/article").Article>
     | undefined;
   try {
-    data = await getArticles({ page, category, limit: 9 });
+    data = await getArticles({
+      page,
+      category,
+      limit: 12,
+      // type cast to keep strict typing in page
+      articleType: articleType as
+        | import("@/types/article").ArticleType
+        | undefined,
+      search,
+    });
   } catch (error) {
     console.error("Failed to fetch articles", error);
   }
 
-  // Mock categories for now
-  const categories = [
-    "Surgery",
-    "Recovery",
-    "Trauma",
-    "Joint Health",
-    "Sports Medicine",
-  ];
+  let categories: import("@/types/article").ArticleCategory[] = [];
+  try {
+    categories = await getCategories();
+  } catch (error) {
+    console.error("Failed to fetch categories", error);
+  }
 
   return (
     <div className="container mx-auto px-6 py-12">
@@ -47,35 +58,20 @@ export default async function ArticlesPage({
         title="Articles & Medical Insights"
         subtitle="Staying informed is the first step towards recovery. Browse my latest publications on orthopedic health."
       />
-
-      <Suspense fallback={<div className="mb-12 h-10" />}>
-        <ArticleFilter
-          categories={categories}
-          activeCategory={searchParams.category || "all"}
-          className="mb-12"
-        />
-      </Suspense>
-
-      {!data || data.docs.length === 0 ? (
-        <EmptyState
-          title="No Articles Found"
-          description="We couldn't find any articles matching your criteria. Please try a different category or check back later."
-        />
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {data.docs.map((article, idx) => (
-              <ArticleCard key={article._id} article={article} idx={idx} />
-            ))}
-          </div>
-
-          <Pagination
-            currentPage={data.page}
-            totalPages={data.totalPages}
-            basePath="/articles"
-          />
-        </>
-      )}
+      <div className="mt-12">
+        <Suspense
+          fallback={
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.from({ length: 12 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton grid
+                <Skeleton key={i} variant="card" className="h-80" />
+              ))}
+            </div>
+          }
+        >
+          <ArticlesClient initialArticles={data} categories={categories} />
+        </Suspense>
+      </div>
     </div>
   );
 }

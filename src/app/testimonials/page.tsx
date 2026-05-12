@@ -36,13 +36,11 @@ export default async function TestimonialsPage() {
           description="We haven't added any patient stories yet. If you've been a patient of Dr. Sahidur, we'd love to hear from you!"
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-8 [column-fill:_balance]">
           {data.docs.map((testimonial, idx) => (
-            <TestimonialCard
-              key={testimonial._id}
-              testimonial={testimonial}
-              idx={idx}
-            />
+            <div key={testimonial._id} className="mb-8 break-inside-avoid">
+              <TestimonialCard testimonial={testimonial} idx={idx} />
+            </div>
           ))}
         </div>
       )}

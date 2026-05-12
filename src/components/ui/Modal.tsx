@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import type React from "react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface ModalProps {
@@ -22,6 +22,10 @@ export const Modal = ({
   children,
   className,
 }: ModalProps) => {
+  const titleId = useId();
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const lastFocused = useRef<HTMLElement | null>(null);
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -29,16 +33,40 @@ export const Modal = ({
     [onClose],
   );
 
+  const focusablesSelector = useMemo(
+    () =>
+      [
+        "a[href]",
+        "button:not([disabled])",
+        "textarea:not([disabled])",
+        "input:not([disabled])",
+        "select:not([disabled])",
+        "[tabindex]:not([tabindex='-1'])",
+      ].join(","),
+    [],
+  );
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      lastFocused.current = document.activeElement as HTMLElement | null;
       window.addEventListener("keydown", handleKeyDown);
+
+      window.setTimeout(() => {
+        const root = dialogRef.current;
+        if (!root) return;
+        const focusables = Array.from(
+          root.querySelectorAll<HTMLElement>(focusablesSelector),
+        );
+        (focusables[0] ?? root).focus();
+      }, 0);
     }
     return () => {
       document.body.style.overflow = "unset";
       window.removeEventListener("keydown", handleKeyDown);
+      lastFocused.current?.focus?.();
     };
-  }, [isOpen, handleKeyDown]);
+  }, [isOpen, handleKeyDown, focusablesSelector]);
 
   const sizes = {
     sm: "max-w-md",
@@ -59,6 +87,7 @@ export const Modal = ({
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
           <motion.div
+            ref={dialogRef}
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -68,10 +97,40 @@ export const Modal = ({
               sizes[size],
               className,
             )}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={title ? titleId : undefined}
+            tabIndex={-1}
+            onKeyDown={(e) => {
+              if (e.key !== "Tab") return;
+              const root = dialogRef.current;
+              if (!root) return;
+              const focusables = Array.from(
+                root.querySelectorAll<HTMLElement>(focusablesSelector),
+              ).filter((el) => !el.hasAttribute("disabled"));
+              if (!focusables.length) return;
+              const first = focusables[0];
+              const last = focusables[focusables.length - 1];
+              const active = document.activeElement as HTMLElement | null;
+              if (e.shiftKey) {
+                if (!active || active === first) {
+                  e.preventDefault();
+                  last.focus();
+                }
+              } else {
+                if (active === last) {
+                  e.preventDefault();
+                  first.focus();
+                }
+              }
+            }}
           >
             <div className="flex items-center justify-between p-6 border-b border-border-light dark:border-border-dark">
               {title && (
-                <h3 className="text-lg font-bold text-text-heading-light dark:text-text-heading-dark">
+                <h3
+                  id={titleId}
+                  className="text-lg font-bold text-text-heading-light dark:text-text-heading-dark"
+                >
                   {title}
                 </h3>
               )}

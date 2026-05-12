@@ -4,20 +4,22 @@ import type React from "react";
 import { AnalyticsTracker } from "@/components/shared/AnalyticsTracker";
 import { PageTransition } from "@/components/shared/PageTransition";
 import { BackToTop } from "@/components/ui/BackToTop";
+import type { AppInfo } from "@/types/app-info";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
 
 interface AppShellProps {
   children: React.ReactNode;
+  appInfo?: AppInfo;
 }
 
-export const AppShell = ({ children }: AppShellProps) => {
+export const AppShell = ({ children, appInfo }: AppShellProps) => {
   return (
     <>
       <AnalyticsTracker />
-      <Header />
+      <Header appInfo={appInfo} />
       <AppShellContent>{children}</AppShellContent>
-      <Footer />
+      <Footer appInfo={appInfo} />
       <BackToTop />
     </>
   );

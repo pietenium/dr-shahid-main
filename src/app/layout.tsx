@@ -47,10 +47,13 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  let appInfo: import("@/types/app-info").AppInfo | undefined;
   try {
-    await getAppInfo();
+    appInfo = await getAppInfo();
   } catch (error) {
-    console.error("Failed to fetch app info in RootLayout", error);
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Failed to fetch app info in RootLayout", error);
+    }
   }
 
   return (
@@ -63,7 +66,7 @@ export default async function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             <RecaptchaProvider>
-              <AppShell>{children}</AppShell>
+              <AppShell appInfo={appInfo}>{children}</AppShell>
               <Toaster
                 position="top-right"
                 richColors

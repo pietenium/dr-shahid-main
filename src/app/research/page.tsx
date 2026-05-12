@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { ResearchCard } from "@/components/research/ResearchCard";
+import { Suspense } from "react";
+import { ResearchClient } from "@/components/research/ResearchClient";
 import { SectionHeading } from "@/components/shared/SectionHeading";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { Pagination } from "@/components/ui/Pagination";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { getResearchList } from "@/lib/api/research";
 
 export const metadata: Metadata = {
@@ -14,15 +14,24 @@ export const metadata: Metadata = {
 export default async function ResearchPage({
   searchParams,
 }: {
-  searchParams: { page?: string };
+  searchParams: { page?: string; uploadType?: string; search?: string };
 }) {
   const page = Number(searchParams.page) || 1;
+  const uploadType = searchParams.uploadType || undefined;
+  const search = searchParams.search || undefined;
 
   let data:
     | import("@/types/api").PaginatedData<import("@/types/research").Research>
     | undefined;
   try {
-    data = await getResearchList({ page, limit: 12 });
+    data = await getResearchList({
+      page,
+      limit: 12,
+      uploadType: uploadType as
+        | import("@/types/research").UploadType
+        | undefined,
+      search,
+    });
   } catch (error) {
     console.error("Failed to fetch research", error);
   }
@@ -35,26 +44,20 @@ export default async function ResearchPage({
         subtitle="Contributing to the advancement of orthopedic science through evidence-based research and clinical studies."
       />
 
-      {!data || data.docs.length === 0 ? (
-        <EmptyState
-          title="No Research Found"
-          description="We haven't published any research papers in this category yet. Please check back later."
-        />
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {data.docs.map((research, idx) => (
-              <ResearchCard key={research._id} research={research} idx={idx} />
-            ))}
-          </div>
-
-          <Pagination
-            currentPage={data.page}
-            totalPages={data.totalPages}
-            basePath="/research"
-          />
-        </>
-      )}
+      <div className="mt-12">
+        <Suspense
+          fallback={
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {Array.from({ length: 8 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton grid
+                <Skeleton key={i} variant="card" className="h-72" />
+              ))}
+            </div>
+          }
+        >
+          <ResearchClient initialResearch={data} />
+        </Suspense>
+      </div>
     </div>
   );
 }

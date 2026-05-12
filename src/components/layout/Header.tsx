@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/Button";
 import { NAV_LINKS } from "@/constants/navigation";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/providers/ThemeProvider";
+import type { AppInfo } from "@/types/app-info";
 
-export const Header = () => {
+export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -42,14 +43,14 @@ export const Header = () => {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center text-white font-bold text-xl group-hover:rotate-12 transition-transform">
-            S
+            {(appInfo?.doctorName?.trim()?.[0] ?? "D").toUpperCase()}
           </div>
           <div className="flex flex-col">
             <span className="font-bold text-lg leading-none text-text-heading-light dark:text-text-heading-dark">
-              Dr. Sahidur
+              {appInfo?.doctorName ?? "Dr. Sahidur Rahman Khan"}
             </span>
             <span className="text-[10px] uppercase tracking-widest text-brand-primary font-bold">
-              Orthopedic Surgeon
+              {appInfo?.doctorSpecialty ?? "Orthopedic Surgeon"}
             </span>
           </div>
         </Link>

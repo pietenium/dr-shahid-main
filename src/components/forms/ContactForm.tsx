@@ -8,14 +8,17 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { submitContact } from "@/lib/api/contact";
 
 const contactSchema = z.object({
-  name: z.string().min(2, "Name is required"),
+  name: z.string().min(2, "Name must be at least 2 characters").trim(),
   email: z.string().email("Invalid email address"),
-  subject: z.string().min(5, "Subject must be at least 5 characters"),
-  message: z.string().min(10, "Message must be at least 10 characters"),
+  phone: z.string().optional(),
+  subject: z.string().min(5, "Subject must be at least 5 characters").trim(),
+  message: z.string().min(10, "Message must be at least 10 characters").trim(),
+  reason: z.enum(["medical-inquiry", "general", "media", "other"]),
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
@@ -31,6 +34,7 @@ export const ContactForm = () => {
     formState: { errors },
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
+    defaultValues: { reason: "general" },
   });
 
   const onSubmit = async (data: ContactFormData) => {
@@ -45,8 +49,20 @@ export const ContactForm = () => {
       await submitContact({ ...data, recaptchaToken: token });
       toast.success("Message sent successfully! I'll get back to you soon.");
       reset();
-    } catch (_error) {
-      toast.error("Failed to send message. Please try again later.");
+    } catch (error) {
+      const status =
+        typeof error === "object" &&
+        error &&
+        "response" in error &&
+        typeof (error as { response?: { status?: unknown } }).response
+          ?.status === "number"
+          ? (error as { response: { status: number } }).response.status
+          : undefined;
+      if (status === 429) {
+        toast.error("Too many messages. Please wait and try again.");
+      } else {
+        toast.error("Failed to send message. Please try again later.");
+      }
     } finally {
       setLoading(false);
     }
@@ -67,6 +83,26 @@ export const ContactForm = () => {
           placeholder="john@example.com"
           error={errors.email?.message}
           {...register("email")}
+        />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Input
+          label="Phone (optional)"
+          type="tel"
+          placeholder="+8801XXXXXXXXX"
+          error={errors.phone?.message}
+          {...register("phone")}
+        />
+        <Select
+          label="Reason"
+          options={[
+            { value: "medical-inquiry", label: "Medical Inquiry" },
+            { value: "general", label: "General" },
+            { value: "media", label: "Media" },
+            { value: "other", label: "Other" },
+          ]}
+          error={errors.reason?.message}
+          {...register("reason")}
         />
       </div>
       <Input

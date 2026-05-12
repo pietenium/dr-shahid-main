@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { FOOTER_LINKS } from "@/constants/navigation";
+import type { AppInfo } from "@/types/app-info";
 
-export const Footer = () => {
+export const Footer = ({ appInfo }: { appInfo?: AppInfo }) => {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -14,31 +15,40 @@ export const Footer = () => {
           <div className="space-y-6">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center text-white font-bold text-xl">
-                S
+                {(appInfo?.doctorName?.trim()?.[0] ?? "D").toUpperCase()}
               </div>
-              <span className="font-bold text-xl text-white">Dr. Sahidur</span>
+              <span className="font-bold text-xl text-white">
+                {appInfo?.doctorName ?? "Dr. Sahidur Rahman Khan"}
+              </span>
             </Link>
             <p className="text-sm leading-relaxed opacity-80">
-              Dedicated Orthopedic Surgeon providing world-class orthopedic care
-              and specialized surgical treatments. Committed to patient recovery
-              and innovative medical research.
+              {appInfo?.siteDescription ??
+                "Dedicated Orthopedic Surgeon providing world-class orthopedic care and specialized surgical treatments."}
             </p>
             <div className="flex items-center gap-4">
-              {/* Social placeholders - can be replaced with real links from appInfo */}
-              {["facebook", "twitter", "linkedin", "instagram"].map(
-                (social) => (
+              {(
+                [
+                  ["facebook", appInfo?.socialLinks?.facebook],
+                  ["twitter", appInfo?.socialLinks?.twitter],
+                  ["linkedin", appInfo?.socialLinks?.linkedin],
+                  ["youtube", appInfo?.socialLinks?.youtube],
+                  ["instagram", appInfo?.socialLinks?.instagram],
+                ] as const
+              )
+                .filter(([, url]) => Boolean(url))
+                .map(([key, url]) => (
                   <a
-                    key={social}
-                    href="/"
+                    key={key}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-brand-primary hover:border-brand-primary transition-all duration-300"
-                    aria-label={social}
+                    aria-label={key}
                   >
-                    <span className="sr-only">{social}</span>
-                    {/* Icon placeholders */}
+                    <span className="sr-only">{key}</span>
                     <div className="w-3 h-3 bg-white/40 rounded-full" />
                   </a>
-                ),
-              )}
+                ))}
             </div>
           </div>
 
@@ -67,21 +77,22 @@ export const Footer = () => {
           {/* Newsletter / Contact Hint */}
           <div className="space-y-6">
             <h4 className="text-white font-bold uppercase tracking-widest text-xs">
-              Emergency
+              Contact
             </h4>
             <p className="text-sm opacity-80">
-              For urgent orthopedic inquiries or emergency appointments, please
-              contact the clinic directly.
+              {appInfo?.address
+                ? appInfo.address
+                : "For urgent orthopedic inquiries or emergency appointments, please contact the clinic directly."}
             </p>
             <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2">
               <span className="block text-[10px] text-brand-primary font-bold uppercase tracking-wider">
-                Call Center
+                Phone
               </span>
               <a
-                href="tel:+880123456789"
+                href={`tel:${appInfo?.phone ?? "+880123456789"}`}
                 className="text-lg font-bold text-white hover:text-brand-primary transition-colors"
               >
-                +880 1234-56789
+                {appInfo?.phone ?? "+880 1234-56789"}
               </a>
             </div>
           </div>
