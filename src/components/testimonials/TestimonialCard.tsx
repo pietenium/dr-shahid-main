@@ -68,6 +68,7 @@ export const TestimonialCard = ({
                 alt={testimonial.name}
                 fill
                 unoptimized
+                loading="lazy"
                 className="object-cover"
               />
             ) : (

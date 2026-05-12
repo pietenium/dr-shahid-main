@@ -32,6 +32,7 @@ export const ArticleCard = ({ article, idx = 0 }: ArticleCardProps) => {
             alt={article.title}
             fill
             unoptimized
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
           />
         )}

@@ -96,6 +96,7 @@ export default async function ArticleDetailPage({ params }: Props) {
               alt={article.title}
               fill
               unoptimized
+              priority
               className="w-full h-full object-cover"
             />
           </div>

@@ -16,6 +16,12 @@ interface AppShellProps {
 export const AppShell = ({ children, appInfo }: AppShellProps) => {
   return (
     <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-[100] focus:p-4 focus:bg-brand-primary focus:text-white"
+      >
+        Skip to main content
+      </a>
       <AnalyticsTracker />
       <Header appInfo={appInfo} />
       <AppShellContent>{children}</AppShellContent>
@@ -28,7 +34,11 @@ export const AppShell = ({ children, appInfo }: AppShellProps) => {
 // Internal wrapper to separate layout from page transitions
 const AppShellContent = ({ children }: { children: React.ReactNode }) => {
   return (
-    <main className="flex-1 pt-24 pb-20">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="flex-1 pt-24 pb-20 focus:outline-none"
+    >
       <PageTransition>{children}</PageTransition>
     </main>
   );
