@@ -1,0 +1,129 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { Textarea } from "@/components/ui/Textarea";
+import { submitContact } from "@/lib/api/contact";
+
+const contactSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").trim(),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().optional(),
+  subject: z.string().min(5, "Subject must be at least 5 characters").trim(),
+  message: z.string().min(10, "Message must be at least 10 characters").trim(),
+  reason: z.enum(["medical-inquiry", "general", "media", "other"]),
+});
+
+type ContactFormData = z.infer<typeof contactSchema>;
+
+export const ContactForm = () => {
+  const [loading, setLoading] = useState(false);
+  const { executeRecaptcha } = useGoogleReCaptcha();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: { reason: "general" },
+  });
+
+  const onSubmit = async (data: ContactFormData) => {
+    if (!executeRecaptcha) {
+      toast.error("ReCAPTCHA not initialized. Please try again.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = await executeRecaptcha("contact_form");
+      await submitContact({ ...data, recaptchaToken: token });
+      toast.success("Message sent successfully! I'll get back to you soon.");
+      reset();
+    } catch (error) {
+      const status =
+        typeof error === "object" &&
+        error &&
+        "response" in error &&
+        typeof (error as { response?: { status?: unknown } }).response
+          ?.status === "number"
+          ? (error as { response: { status: number } }).response.status
+          : undefined;
+      if (status === 429) {
+        toast.error("Too many messages. Please wait and try again.");
+      } else {
+        toast.error("Failed to send message. Please try again later.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Input
+          label="Full Name"
+          placeholder="John Doe"
+          error={errors.name?.message}
+          {...register("name")}
+        />
+        <Input
+          label="Email Address"
+          type="email"
+          placeholder="john@example.com"
+          error={errors.email?.message}
+          {...register("email")}
+        />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Input
+          label="Phone (optional)"
+          type="tel"
+          placeholder="+8801XXXXXXXXX"
+          error={errors.phone?.message}
+          {...register("phone")}
+        />
+        <Select
+          label="Reason"
+          options={[
+            { value: "medical-inquiry", label: "Medical Inquiry" },
+            { value: "general", label: "General" },
+            { value: "media", label: "Media" },
+            { value: "other", label: "Other" },
+          ]}
+          error={errors.reason?.message}
+          {...register("reason")}
+        />
+      </div>
+      <Input
+        label="Subject"
+        placeholder="How can I help you?"
+        error={errors.subject?.message}
+        {...register("subject")}
+      />
+      <Textarea
+        label="Your Message"
+        placeholder="Please describe your inquiry..."
+        error={errors.message?.message}
+        maxLength={1000}
+        {...register("message")}
+      />
+      <Button type="submit" loading={loading} className="w-full h-14 text-lg">
+        Send Message
+      </Button>
+      <p className="text-[10px] text-center text-text-para-light dark:text-text-para-dark opacity-40 uppercase tracking-widest">
+        Protected by reCAPTCHA v3
+      </p>
+    </form>
+  );
+};
