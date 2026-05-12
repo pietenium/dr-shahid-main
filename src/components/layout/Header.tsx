@@ -8,13 +8,20 @@ import { Button } from "@/components/ui/Button";
 import { NAV_LINKS } from "@/constants/navigation";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/providers/ThemeProvider";
+import { useUIStore } from "@/store/use-ui-store";
 import type { AppInfo } from "@/types/app-info";
 
 export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUIStore();
   const pathname = usePathname();
   const { setTheme, resolvedTheme } = useTheme();
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -23,8 +30,8 @@ export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
   }, []);
 
   useEffect(() => {
-    if (pathname) setIsMobileMenuOpen(false);
-  }, [pathname]);
+    if (pathname) closeMobileMenu();
+  }, [pathname, closeMobileMenu]);
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
@@ -77,11 +84,13 @@ export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
         <div className="flex items-center gap-4">
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-text-para-light dark:text-text-para-dark"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-text-para-light dark:text-text-para-dark min-w-[36px] min-h-[36px] flex items-center justify-center"
             aria-label="Toggle theme"
             type="button"
           >
-            {resolvedTheme === "dark" ? (
+            {!mounted ? (
+              <div className="w-5 h-5 opacity-0" />
+            ) : resolvedTheme === "dark" ? (
               <svg
                 width="20"
                 height="20"
@@ -130,7 +139,7 @@ export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
 
           {/* Mobile Menu Toggle */}
           <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onClick={toggleMobileMenu}
             className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-text-para-light dark:text-text-para-dark"
             aria-label="Toggle mobile menu"
             type="button"

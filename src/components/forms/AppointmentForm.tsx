@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { createAppointment } from "@/lib/api/appointments";
+import { useAppointmentPrefill } from "@/store/use-appointment-prefill";
 
 const appointmentSchema = z.object({
   name: z.string().min(2, "Name is required").trim(),
@@ -38,6 +39,7 @@ export const AppointmentForm = () => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const { executeRecaptcha } = useGoogleReCaptcha();
+  const { message: prefillMessage, clearPrefill } = useAppointmentPrefill();
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().slice(0, 10);
@@ -51,8 +53,13 @@ export const AppointmentForm = () => {
     resolver: zodResolver(appointmentSchema),
     defaultValues: {
       preferredTime: "",
+      message: prefillMessage ?? "",
     },
   });
+
+  useEffect(() => {
+    return () => clearPrefill();
+  }, [clearPrefill]);
 
   const onSubmit = async (data: AppointmentFormData) => {
     if (!executeRecaptcha) {
@@ -75,7 +82,7 @@ export const AppointmentForm = () => {
       toast.success(
         "Appointment request submitted! We will contact you soon to confirm.",
       );
-      reset();
+      reset({ preferredTime: "", message: "" });
       setSubmitted(true);
     } catch (error) {
       const status =

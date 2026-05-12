@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SearchResults } from "@/components/search/SearchResults";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
 import { searchContent } from "@/lib/api/search";
+import { useSearchStore } from "@/store/use-search-store";
 import type { SearchType } from "@/types/search";
 
 const TYPE_TABS: Array<{ label: string; value: SearchType | "all" }> = [
@@ -20,7 +21,11 @@ const TYPE_TABS: Array<{ label: string; value: SearchType | "all" }> = [
 
 export function SearchClient() {
   const [query, setQuery] = useState("");
-  const [type, setType] = useState<SearchType | "all">("all");
+  const {
+    activeType: type,
+    setActiveType: setType,
+    addRecentSearch,
+  } = useSearchStore();
   const debounced = useDebounce(query.trim(), 400);
 
   const queryKey = useMemo(
@@ -38,6 +43,12 @@ export function SearchClient() {
         limit: 10,
       }),
   });
+
+  useEffect(() => {
+    if (debounced.length >= 2 && data) {
+      addRecentSearch(debounced, type);
+    }
+  }, [debounced, data, type, addRecentSearch]);
 
   return (
     <div className="container mx-auto px-6 py-12">

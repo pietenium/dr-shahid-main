@@ -40,8 +40,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-public_website_prompt_part1.md
-public_website_prompt_part2.md 
-public_website_prompt_part3.md
-DashPromptTS_Version.txt
-backend-project-brief.md
+frontend_plans_and_works/
