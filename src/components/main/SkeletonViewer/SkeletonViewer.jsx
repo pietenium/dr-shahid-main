@@ -1,24 +1,55 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import * as THREE from "three";
+import {
+  ACESFilmicToneMapping,
+  AdditiveBlending,
+  AmbientLight,
+  AxesHelper,
+  Box3,
+  BoxGeometry,
+  BufferAttribute,
+  BufferGeometry,
+  Color,
+  CylinderGeometry,
+  DirectionalLight,
+  FogExp2,
+  GridHelper,
+  Group,
+  HemisphereLight,
+  Mesh,
+  MeshStandardMaterial,
+  PCFSoftShadowMap,
+  PerspectiveCamera,
+  PointLight,
+  Points,
+  PointsMaterial,
+  Raycaster,
+  Scene,
+  SRGBColorSpace,
+  TorusGeometry,
+  Vector2,
+  Vector3,
+  WebGLRenderer,
+} from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const CYAN = new THREE.Color(0x00e5ff);
-const GOLD = new THREE.Color(0xffaa00);
+const CYAN = new Color(0x00e5ff);
+const GOLD = new Color(0xffaa00);
 
 // ─── Pure helpers (no React) ──────────────────────────────────────────────────
 function createScene() {
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x050a0f);
-  scene.fog = new THREE.FogExp2(0x050a0f, 0.02);
+  const scene = new Scene();
+  scene.background = new Color(0x050a0f);
+  scene.fog = new FogExp2(0x050a0f, 0.02);
   return scene;
 }
 
 function createCamera(w, h) {
-  const cam = new THREE.PerspectiveCamera(45, w / h, 0.01, 500);
+  const cam = new PerspectiveCamera(45, w / h, 0.01, 500);
   cam.position.set(0, 0.5, 8); // Increased initial distance for better zoom range
   return cam;
 }
@@ -27,7 +58,7 @@ function createRenderer(canvas, w, h) {
   const testCtx = canvas.getContext("webgl2") || canvas.getContext("webgl");
   if (!testCtx) throw new Error("WebGL not supported in this browser.");
 
-  const renderer = new THREE.WebGLRenderer({
+  const renderer = new WebGLRenderer({
     canvas,
     antialias: true,
     powerPreference: "high-performance",
@@ -35,19 +66,19 @@ function createRenderer(canvas, w, h) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(w, h, false);
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.shadowMap.type = PCFSoftShadowMap;
+  renderer.toneMapping = ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.2;
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.outputColorSpace = SRGBColorSpace;
   return renderer;
 }
 
 function createLights(scene) {
   // Ambient base
-  scene.add(new THREE.AmbientLight(0x1a2a3a, 1.8));
+  scene.add(new AmbientLight(0x1a2a3a, 1.8));
 
   // Main key light - casts shadows
-  const keyLight = new THREE.DirectionalLight(0xffeedd, 3.5);
+  const keyLight = new DirectionalLight(0xffeedd, 3.5);
   keyLight.position.set(3, 8, 4);
   keyLight.castShadow = true;
   keyLight.receiveShadow = true;
@@ -64,7 +95,7 @@ function createLights(scene) {
   scene.add(keyLight);
 
   // Fill light from opposite side
-  const fillLight = new THREE.DirectionalLight(0x446688, 1.8);
+  const fillLight = new DirectionalLight(0x446688, 1.8);
   fillLight.position.set(-4, 3, -3);
   fillLight.castShadow = true;
   fillLight.shadow.mapSize.width = 1024;
@@ -75,39 +106,34 @@ function createLights(scene) {
   scene.add(fillLight);
 
   // Cyan rim light for edge definition
-  const rimLight1 = new THREE.PointLight(0x00e5ff, 1.2);
+  const rimLight1 = new PointLight(0x00e5ff, 1.2);
   rimLight1.position.set(-2, 4, -5);
   scene.add(rimLight1);
 
-  const rimLight2 = new THREE.PointLight(0x3366aa, 0.8);
+  const rimLight2 = new PointLight(0x3366aa, 0.8);
   rimLight2.position.set(4, 3, -4);
   scene.add(rimLight2);
 
   // Under-lighting for dramatic effect
-  const underLight = new THREE.PointLight(0x225588, 0.6);
+  const underLight = new PointLight(0x225588, 0.6);
   underLight.position.set(0, -1, 2);
   scene.add(underLight);
 }
 
 function createAdvancedGrid(scene) {
-  const group = new THREE.Group();
+  const group = new Group();
 
   // Main holographic grid floor
   const gridSize = 12;
   const divisions = 40;
 
   // Primary grid (cyan)
-  const gridHelper1 = new THREE.GridHelper(
-    gridSize,
-    divisions,
-    0x00e5ff,
-    0x1a3a5a,
-  );
+  const gridHelper1 = new GridHelper(gridSize, divisions, 0x00e5ff, 0x1a3a5a);
   gridHelper1.position.y = -1.2;
   group.add(gridHelper1);
 
   // Secondary grid (gold/amber) - rotated for complexity
-  const gridHelper2 = new THREE.GridHelper(
+  const gridHelper2 = new GridHelper(
     gridSize * 1.2,
     divisions * 1.5,
     0xffaa00,
@@ -123,11 +149,11 @@ function createAdvancedGrid(scene) {
   group.add(rings);
 
   // Outer boundary ring
-  const boundaryRing = new THREE.Mesh(
-    new THREE.TorusGeometry(5.8, 0.02, 16, 100),
-    new THREE.MeshStandardMaterial({
+  const boundaryRing = new Mesh(
+    new TorusGeometry(5.8, 0.02, 16, 100),
+    new MeshStandardMaterial({
       color: 0x00e5ff,
-      emissive: new THREE.Color(0x004466),
+      emissive: new Color(0x004466),
       emissiveIntensity: 0.5,
       transparent: true,
       opacity: 0.3,
@@ -143,15 +169,15 @@ function createAdvancedGrid(scene) {
   group.add(corners);
 
   // Central platform (receives shadows beautifully)
-  const platform = new THREE.Mesh(
-    new THREE.CylinderGeometry(2.2, 2.2, 0.05, 32),
-    new THREE.MeshStandardMaterial({
+  const platform = new Mesh(
+    new CylinderGeometry(2.2, 2.2, 0.05, 32),
+    new MeshStandardMaterial({
       color: 0x0a1a2a,
       roughness: 0.4,
       metalness: 0.3,
       transparent: true,
       opacity: 0.7,
-      emissive: new THREE.Color(0x112233),
+      emissive: new Color(0x112233),
       emissiveIntensity: 0.3,
     }),
   );
@@ -169,16 +195,15 @@ function createAdvancedGrid(scene) {
 }
 
 function createCircularRings() {
-  const group = new THREE.Group();
+  const group = new Group();
   const radii = [2.5, 3.8, 5.0];
 
   radii.forEach((r, i) => {
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(r, 0.008, 8, 64),
-      new THREE.MeshStandardMaterial({
+    const ring = new Mesh(
+      new TorusGeometry(r, 0.008, 8, 64),
+      new MeshStandardMaterial({
         color: i === 1 ? 0xffaa00 : 0x00e5ff,
-        emissive:
-          i === 1 ? new THREE.Color(0x553300) : new THREE.Color(0x004466),
+        emissive: i === 1 ? new Color(0x553300) : new Color(0x004466),
         emissiveIntensity: 0.3,
         transparent: true,
         opacity: 0.15 + i * 0.1,
@@ -192,7 +217,7 @@ function createCircularRings() {
 }
 
 function createCornerMarkers() {
-  const group = new THREE.Group();
+  const group = new Group();
   const positions = [
     [-5.5, 0, -5.5],
     [5.5, 0, -5.5],
@@ -201,11 +226,11 @@ function createCornerMarkers() {
   ];
 
   positions.forEach((pos) => {
-    const marker = new THREE.Mesh(
-      new THREE.BoxGeometry(0.15, 0.02, 0.15),
-      new THREE.MeshStandardMaterial({
+    const marker = new Mesh(
+      new BoxGeometry(0.15, 0.02, 0.15),
+      new MeshStandardMaterial({
         color: 0x00e5ff,
-        emissive: new THREE.Color(0x004466),
+        emissive: new Color(0x004466),
         emissiveIntensity: 0.8,
         transparent: true,
         opacity: 0.6,
@@ -219,7 +244,7 @@ function createCornerMarkers() {
 }
 
 function createGridParticles() {
-  const geometry = new THREE.BufferGeometry();
+  const geometry = new BufferGeometry();
   const count = 200;
   const positions = new Float32Array(count * 3);
 
@@ -231,17 +256,17 @@ function createGridParticles() {
     positions[i + 2] = Math.sin(angle) * radius;
   }
 
-  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("position", new BufferAttribute(positions, 3));
 
-  const material = new THREE.PointsMaterial({
+  const material = new PointsMaterial({
     color: 0x00e5ff,
     size: 0.015,
     transparent: true,
     opacity: 0.4,
-    blending: THREE.AdditiveBlending,
+    blending: AdditiveBlending,
   });
 
-  return new THREE.Points(geometry, material);
+  return new Points(geometry, material);
 }
 
 function createControls(camera, domElement) {
@@ -276,15 +301,15 @@ function createControls(camera, domElement) {
 function autoFitModel(gltf) {
   const root = gltf.scene;
 
-  const box1 = new THREE.Box3().setFromObject(root);
-  const size1 = new THREE.Vector3();
+  const box1 = new Box3().setFromObject(root);
+  const size1 = new Vector3();
   box1.getSize(size1);
   const maxDim = Math.max(size1.x, size1.y, size1.z);
 
   if (maxDim > 0) root.scale.setScalar(2.2 / maxDim);
 
-  const box2 = new THREE.Box3().setFromObject(root);
-  const center = new THREE.Vector3();
+  const box2 = new Box3().setFromObject(root);
+  const center = new Vector3();
   box2.getCenter(center);
   root.position.sub(center);
 
@@ -420,14 +445,14 @@ export default function SkeletonViewer({ showDebug = false }) {
     const gridGroup = createAdvancedGrid(scene);
 
     if (showDebug) {
-      scene.add(new THREE.AxesHelper(1.5));
-      const debugGrid = new THREE.GridHelper(8, 20, 0xff0000, 0x330000);
+      scene.add(new AxesHelper(1.5));
+      const debugGrid = new GridHelper(8, 20, 0xff0000, 0x330000);
       debugGrid.position.y = -1.15;
       scene.add(debugGrid);
     }
 
     // Add subtle environment reflection
-    const envLight = new THREE.HemisphereLight(0x446688, 0x223344, 1.2);
+    const envLight = new HemisphereLight(0x446688, 0x223344, 1.2);
     scene.add(envLight);
 
     stateRef.current = {
@@ -441,11 +466,15 @@ export default function SkeletonViewer({ showDebug = false }) {
     };
 
     // ── Load GLB ─────────────────────────────────────────────────────────────
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
+
     const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
     let alive = true;
 
     loader.load(
-      "/skeleton.glb",
+      "/skeleton-optimized.glb",
       (gltf) => {
         if (!alive) return;
 
@@ -454,8 +483,8 @@ export default function SkeletonViewer({ showDebug = false }) {
         scene.add(model);
         stateRef.current.meshes = meshes;
 
-        const box = new THREE.Box3().setFromObject(model);
-        const size = new THREE.Vector3();
+        const box = new Box3().setFromObject(model);
+        const size = new Vector3();
         box.getSize(size);
         camera.position.set(2, size.y * 0.6, size.z * 4.5); // Increased distance for better zoom range
         controls.target.set(0, size.y * 0.4, 0);
@@ -492,8 +521,8 @@ export default function SkeletonViewer({ showDebug = false }) {
     window.addEventListener("resize", onResize);
 
     // ── Raycast / click ───────────────────────────────────────────────────────
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
+    const raycaster = new Raycaster();
+    const mouse = new Vector2();
 
     const onClick = (e) => {
       const { meshes, selected } = stateRef.current;
