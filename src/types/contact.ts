@@ -7,6 +7,7 @@ export interface ContactPayload {
   subject: string;
   message: string;
   reason?: ContactReason;
+  recaptchaToken?: string;
 }
 
 export interface ContactResponse {

@@ -1,19 +1,37 @@
-import React from "react";
+import { About } from "@/components/home/About";
+import { CTASection } from "@/components/home/CTASection";
+import { FeaturedArticles } from "@/components/home/FeaturedArticles";
 import { Hero } from "@/components/home/Hero";
 import { Specialties } from "@/components/home/Specialties";
-import { About } from "@/components/home/About";
+import { TestimonialsCarousel } from "@/components/home/TestimonialsCarousel";
 import { TestimonialsCTA } from "@/components/home/TestimonialsCTA";
-import { PageTransition } from "@/components/shared/PageTransition";
+import { getAppInfo } from "@/lib/api/app-info";
+import { getArticles } from "@/lib/api/articles";
+import { getTestimonials } from "@/lib/api/testimonials";
 
-export default function Home() {
+export default async function Home() {
+  const [appInfo, articles, testimonials] = await Promise.all([
+    getAppInfo().catch(() => undefined),
+    getArticles({ limit: 6, articleType: "MEDICAL" }).catch(() => undefined),
+    getTestimonials().catch(() => undefined),
+  ]);
+
   return (
-    <PageTransition>
-      <div className="flex flex-col w-full overflow-x-hidden">
-        <Hero />
-        <Specialties />
-        <About />
-        <TestimonialsCTA />
-      </div>
-    </PageTransition>
+    <div className="flex flex-col w-full overflow-x-hidden">
+      <Hero />
+      <Specialties />
+      <About />
+
+      {articles?.docs?.length ? (
+        <FeaturedArticles articles={articles.docs} />
+      ) : null}
+
+      {testimonials?.docs?.length ? (
+        <TestimonialsCarousel testimonials={testimonials.docs} />
+      ) : null}
+
+      <CTASection clinicHours={appInfo?.clinicHours} />
+      <TestimonialsCTA />
+    </div>
   );
 }
