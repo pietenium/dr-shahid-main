@@ -21,7 +21,7 @@ export const BackToTop = () => {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.5, y: 20 }}
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-[90] p-3 rounded-full bg-brand-primary text-white shadow-lg hover:bg-brand-hover hover:scale-110 active:scale-95 transition-all"
+          className="fixed bottom-8 right-8 z-90 p-3 rounded-full bg-brand-primary text-white shadow-lg hover:bg-brand-hover hover:scale-110 active:scale-95 transition-all"
           aria-label="Back to top"
           type="button"
         >

@@ -65,7 +65,7 @@ export const Footer = ({ appInfo }: { appInfo?: AppInfo }) => {
                       href={link.href}
                       className="text-sm hover:text-footer-hover transition-colors flex items-center group"
                     >
-                      <span className="w-0 group-hover:w-2 h-[1px] bg-brand-primary transition-all mr-0 group-hover:mr-2" />
+                      <span className="w-0 group-hover:w-2 h-px bg-brand-primary transition-all mr-0 group-hover:mr-2" />
                       {link.label}
                     </Link>
                   </li>

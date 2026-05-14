@@ -39,7 +39,7 @@ export function TestimonialsCarousel({
 
   return (
     <section className="py-24 bg-white dark:bg-bg-dark relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-brand-primary/5 via-transparent to-brand-secondary/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-b from-brand-primary/5 via-transparent to-brand-secondary/5 pointer-events-none" />
       <div className="container mx-auto px-6 relative">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-12">
           <SectionHeading
@@ -118,7 +118,7 @@ export function TestimonialsCarousel({
           {visible.map((t, idx) => (
             <div
               key={t._id}
-              className="snap-center shrink-0 w-[85vw] sm:w-[60vw] lg:w-[380px]"
+              className="snap-center shrink-0 w-[85vw] sm:w-[60vw] lg:w-95"
             >
               <TestimonialCard testimonial={t} idx={idx} />
             </div>

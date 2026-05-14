@@ -4,7 +4,7 @@ export function CTASection({ clinicHours }: { clinicHours?: string }) {
   return (
     <section className="py-20">
       <div className="container mx-auto px-6">
-        <div className="rounded-3xl overflow-hidden border border-border-light dark:border-border-dark bg-gradient-to-r from-brand-primary to-brand-hover p-10 md:p-14 text-white relative">
+        <div className="rounded-3xl overflow-hidden border border-border-light dark:border-border-dark bg-linear-to-r from-brand-primary to-brand-hover p-10 md:p-14 text-white relative">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.25),transparent_50%)]" />
           <div className="relative max-w-4xl space-y-6">
             <h2 className="text-3xl md:text-4xl font-bold leading-tight">

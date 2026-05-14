@@ -24,7 +24,7 @@ export const Skeleton = ({ className, variant = "text" }: SkeletonProps) => {
         className,
       )}
     >
-      <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 dark:via-gray-600/30 to-transparent animate-shimmer-fast" />
+      <div className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 dark:via-gray-600/30 to-transparent animate-shimmer-fast" />
     </div>
   );
 };

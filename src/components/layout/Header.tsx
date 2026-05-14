@@ -90,7 +90,7 @@ export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
         <div className="flex items-center gap-4">
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-text-para-light dark:text-text-para-dark min-w-[36px] min-h-[36px] flex items-center justify-center"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-text-para-light dark:text-text-para-dark min-w-9 min-h-9 flex items-center justify-center"
             aria-label="Toggle theme"
             type="button"
           >

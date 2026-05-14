@@ -123,7 +123,7 @@ export const Hero = () => {
         >
           {/* Dark 3D medical viewer card */}
           <div
-            className="relative w-full max-w-[500px] aspect-[4/5] max-h-[80vh] rounded-[2rem] overflow-hidden bg-bg-light dark:bg-bg-dark
+            className="relative w-full max-w-125 aspect-4/5 max-h-[80vh] rounded-4xl overflow-hidden bg-bg-light dark:bg-bg-dark
                           shadow-[0_24px_80px_-12px_rgba(0,0,0,0.25),0_0_0_1px_rgba(47,160,132,0.15)] mx-auto"
           >
             <SkeletonViewer showDebug={false} />

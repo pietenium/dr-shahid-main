@@ -18,7 +18,7 @@ export const AppShell = ({ children, appInfo }: AppShellProps) => {
     <>
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-[100] focus:p-4 focus:bg-brand-primary focus:text-white"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-100 focus:p-4 focus:bg-brand-primary focus:text-white"
       >
         Skip to main content
       </a>
