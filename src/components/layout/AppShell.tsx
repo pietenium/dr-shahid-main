@@ -37,7 +37,7 @@ const AppShellContent = ({ children }: { children: React.ReactNode }) => {
     <main
       id="main-content"
       tabIndex={-1}
-      className="flex-1 pt-24 pb-20 focus:outline-none"
+      className="flex-1 pt-24 focus:outline-none"
     >
       <PageTransition>{children}</PageTransition>
     </main>

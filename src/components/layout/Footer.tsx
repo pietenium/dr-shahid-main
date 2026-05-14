@@ -8,7 +8,7 @@ export const Footer = ({ appInfo }: { appInfo?: AppInfo }) => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-footer-bg text-footer-text pt-20 pb-10">
+    <footer className="bg-bg-light dark:bg-footer-bg text-text-para-light dark:text-footer-text pt-20 pb-10 border-t border-border-light dark:border-transparent">
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Brand Info */}
@@ -17,7 +17,7 @@ export const Footer = ({ appInfo }: { appInfo?: AppInfo }) => {
               <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center text-white font-bold text-xl">
                 {(appInfo?.doctorName?.trim()?.[0] ?? "D").toUpperCase()}
               </div>
-              <span className="font-bold text-xl text-white">
+              <span className="font-bold text-xl text-text-heading-light dark:text-white">
                 {appInfo?.doctorName ?? "Dr. Sahidur Rahman Khan"}
               </span>
             </Link>
@@ -42,11 +42,11 @@ export const Footer = ({ appInfo }: { appInfo?: AppInfo }) => {
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-brand-primary hover:border-brand-primary transition-all duration-300"
+                    className="w-8 h-8 rounded-full border border-border-dark/20 dark:border-white/10 flex items-center justify-center hover:bg-brand-primary hover:border-brand-primary transition-all duration-300 group"
                     aria-label={key}
                   >
                     <span className="sr-only">{key}</span>
-                    <div className="w-3 h-3 bg-white/40 rounded-full" />
+                    <div className="w-3 h-3 bg-text-para-light group-hover:bg-white dark:bg-white/40 dark:group-hover:bg-white/40 rounded-full" />
                   </a>
                 ))}
             </div>
@@ -55,7 +55,7 @@ export const Footer = ({ appInfo }: { appInfo?: AppInfo }) => {
           {/* Quick Links */}
           {FOOTER_LINKS.map((group) => (
             <div key={group.title} className="space-y-6">
-              <h4 className="text-white font-bold uppercase tracking-widest text-xs">
+              <h4 className="text-text-heading-light dark:text-white font-bold uppercase tracking-widest text-xs">
                 {group.title}
               </h4>
               <ul className="space-y-4">
@@ -76,7 +76,7 @@ export const Footer = ({ appInfo }: { appInfo?: AppInfo }) => {
 
           {/* Newsletter / Contact Hint */}
           <div className="space-y-6">
-            <h4 className="text-white font-bold uppercase tracking-widest text-xs">
+            <h4 className="text-text-heading-light dark:text-white font-bold uppercase tracking-widest text-xs">
               Contact
             </h4>
             <p className="text-sm opacity-80">
@@ -84,13 +84,13 @@ export const Footer = ({ appInfo }: { appInfo?: AppInfo }) => {
                 ? appInfo.address
                 : "For urgent orthopedic inquiries or emergency appointments, please contact the clinic directly."}
             </p>
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2">
+            <div className="p-4 rounded-xl bg-gray-100 dark:bg-white/5 border border-border-light dark:border-white/10 space-y-2">
               <span className="block text-[10px] text-brand-primary font-bold uppercase tracking-wider">
                 Phone
               </span>
               <a
                 href={`tel:${appInfo?.phone ?? "+880123456789"}`}
-                className="text-lg font-bold text-white hover:text-brand-primary transition-colors"
+                className="text-lg font-bold text-text-heading-light dark:text-white hover:text-brand-primary dark:hover:text-brand-primary transition-colors"
               >
                 {appInfo?.phone ?? "+880 1234-56789"}
               </a>
@@ -99,22 +99,29 @@ export const Footer = ({ appInfo }: { appInfo?: AppInfo }) => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] font-medium uppercase tracking-[0.2em]">
+        <div className="pt-8 border-t border-border-light dark:border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] font-medium uppercase tracking-[0.2em]">
           <p>© {currentYear} DR. SAHIDUR RAHMAN KHAN. ALL RIGHTS RESERVED.</p>
           <div className="flex items-center gap-8">
-            <Link href="/terms" className="hover:text-white transition-colors">
+            <Link
+              href="/terms"
+              className="hover:text-brand-primary dark:hover:text-white transition-colors"
+            >
               Terms of Use
             </Link>
             <Link
               href="/privacy"
-              className="hover:text-white transition-colors"
+              className="hover:text-brand-primary dark:hover:text-white transition-colors"
             >
               Privacy Policy
             </Link>
-            <span className="text-white/20 hidden md:block">|</span>
+            <span className="text-border-dark dark:text-white/20 hidden md:block">
+              |
+            </span>
             <span className="flex items-center gap-1">
-              DESIGNED BY{" "}
-              <span className="text-brand-primary">ANTIGRAVITY</span>
+              DESIGNED BY
+              <Link href="https://pietenium.vercel.app" target="_blank">
+                <span className="text-brand-primary">PIETENIUM</span>
+              </Link>
             </span>
           </div>
         </div>
