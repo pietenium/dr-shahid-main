@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { getArticleBySlug } from "@/lib/api/articles";
 import { formatDate, readingTime } from "@/lib/utils";
+import type { Article } from "@/types/article";
 
 interface Props {
   params: { slug: string };
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ArticleDetailPage({ params }: Props) {
-  let article: import("@/types/article").Article;
+  let article: Article;
   try {
     article = await getArticleBySlug(params.slug);
   } catch (_error) {

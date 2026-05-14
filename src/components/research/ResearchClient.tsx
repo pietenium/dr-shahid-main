@@ -82,7 +82,7 @@ export function ResearchClient({
             <Skeleton key={i} variant="card" className="h-72" />
           ))}
         </div>
-      ) : !data || data.docs.length === 0 ? (
+      ) : !data?.docs || data.docs.length === 0 ? (
         <EmptyState
           title="No Research Found"
           description="Try adjusting your filters or search query."

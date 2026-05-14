@@ -4,6 +4,8 @@ import { ArticlesClient } from "@/components/articles/ArticlesClient";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getArticles, getCategories } from "@/lib/api/articles";
+import type { PaginatedData } from "@/types/api";
+import type { Article, ArticleCategory, ArticleType } from "@/types/article";
 
 export const metadata: Metadata = {
   title: "Articles & Insights",
@@ -26,25 +28,21 @@ export default async function ArticlesPage({
   const articleType = searchParams.articleType || undefined;
   const search = searchParams.search || undefined;
 
-  let data:
-    | import("@/types/api").PaginatedData<import("@/types/article").Article>
-    | undefined;
+  let data: PaginatedData<Article> | undefined;
   try {
     data = await getArticles({
       page,
       category,
       limit: 12,
       // type cast to keep strict typing in page
-      articleType: articleType as
-        | import("@/types/article").ArticleType
-        | undefined,
+      articleType: articleType as ArticleType | undefined,
       search,
     });
   } catch (error) {
     console.error("Failed to fetch articles", error);
   }
 
-  let categories: import("@/types/article").ArticleCategory[] = [];
+  let categories: ArticleCategory[] = [];
   try {
     categories = await getCategories();
   } catch (error) {

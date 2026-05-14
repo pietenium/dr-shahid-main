@@ -3,6 +3,8 @@ import { SectionHeading } from "@/components/shared/SectionHeading";
 import { TestimonialCard } from "@/components/testimonials/TestimonialCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getTestimonials } from "@/lib/api/testimonials";
+import type { PaginatedData } from "@/types/api";
+import type { Testimonial } from "@/types/testimonial";
 
 export const metadata: Metadata = {
   title: "Patient Stories",
@@ -11,11 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function TestimonialsPage() {
-  let data:
-    | import("@/types/api").PaginatedData<
-        import("@/types/testimonial").Testimonial
-      >
-    | undefined;
+  let data: PaginatedData<Testimonial> | undefined;
   try {
     data = await getTestimonials();
   } catch (error) {
@@ -30,7 +28,7 @@ export default async function TestimonialsPage() {
         subtitle="The greatest reward in medicine is seeing my patients return to their active lives. Here are some of their stories."
       />
 
-      {!data || data.docs.length === 0 ? (
+      {!data?.docs || data.docs.length === 0 ? (
         <EmptyState
           title="No Testimonials Yet"
           description="We haven't added any patient stories yet. If you've been a patient of Dr. Sahidur, we'd love to hear from you!"

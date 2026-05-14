@@ -8,6 +8,7 @@ import { getAppInfo } from "@/lib/api/app-info";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { RecaptchaProvider } from "@/providers/RecaptchaProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import type { AppInfo } from "@/types/app-info";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -48,7 +49,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  let appInfo: import("@/types/app-info").AppInfo | undefined;
+  let appInfo: AppInfo | undefined;
   try {
     appInfo = await getAppInfo();
   } catch (error) {

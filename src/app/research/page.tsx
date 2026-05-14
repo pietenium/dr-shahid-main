@@ -4,6 +4,8 @@ import { ResearchClient } from "@/components/research/ResearchClient";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getResearchList } from "@/lib/api/research";
+import type { PaginatedData } from "@/types/api";
+import type { Research, UploadType } from "@/types/research";
 
 export const metadata: Metadata = {
   title: "Research & Publications",
@@ -20,16 +22,12 @@ export default async function ResearchPage({
   const uploadType = searchParams.uploadType || undefined;
   const search = searchParams.search || undefined;
 
-  let data:
-    | import("@/types/api").PaginatedData<import("@/types/research").Research>
-    | undefined;
+  let data: PaginatedData<Research> | undefined;
   try {
     data = await getResearchList({
       page,
       limit: 12,
-      uploadType: uploadType as
-        | import("@/types/research").UploadType
-        | undefined,
+      uploadType: uploadType as UploadType | undefined,
       search,
     });
   } catch (error) {
