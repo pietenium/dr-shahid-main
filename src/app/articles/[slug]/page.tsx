@@ -10,12 +10,13 @@ import { formatDate, readingTime } from "@/lib/utils";
 import type { Article } from "@/types/article";
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
   try {
-    const article = await getArticleBySlug(params.slug);
+    const article = await getArticleBySlug(slug);
     return {
       title: article.title,
       description: article.excerpt || article.title,
@@ -33,9 +34,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ArticleDetailPage({ params }: Props) {
+  const { slug } = await params;
   let article: Article;
   try {
-    article = await getArticleBySlug(params.slug);
+    article = await getArticleBySlug(slug);
   } catch (_error) {
     notFound();
   }

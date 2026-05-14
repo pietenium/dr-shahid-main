@@ -25,7 +25,7 @@ export async function getArticles(
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article> {
-  return serverFetch<Article>(`/articles/slug/${slug}`, {
+  return serverFetch<Article>(`/articles/${slug}`, {
     revalidate: 600,
     tags: ["article", slug],
   });

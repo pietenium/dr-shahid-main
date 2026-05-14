@@ -16,11 +16,14 @@ export const metadata: Metadata = {
 export default async function ResearchPage({
   searchParams,
 }: {
-  searchParams: { page?: string; uploadType?: string; search?: string };
+  searchParams: Promise<{
+    page?: string;
+    uploadType?: string;
+    search?: string;
+  }>;
 }) {
-  const page = Number(searchParams.page) || 1;
-  const uploadType = searchParams.uploadType || undefined;
-  const search = searchParams.search || undefined;
+  const { page: pageParam, uploadType, search } = await searchParams;
+  const page = Number(pageParam) || 1;
 
   let data: PaginatedData<Research> | undefined;
   try {

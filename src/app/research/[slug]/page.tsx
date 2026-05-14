@@ -8,12 +8,13 @@ import { getResearchBySlug } from "@/lib/api/research";
 import { formatDate } from "@/lib/utils";
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
   try {
-    const research = await getResearchBySlug(params.slug);
+    const research = await getResearchBySlug(slug);
     return {
       title: research.title,
       description: research.description || research.title,
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           : [],
         type: "article",
       },
-      alternates: { canonical: `/research/${params.slug}` },
+      alternates: { canonical: `/research/${slug}` },
     };
   } catch (_error) {
     return { title: "Research Not Found" };
@@ -33,9 +34,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ResearchDetailPage({ params }: Props) {
+  const { slug } = await params;
   let research: import("@/types/research").Research;
   try {
-    research = await getResearchBySlug(params.slug);
+    research = await getResearchBySlug(slug);
   } catch (_error) {
     notFound();
   }

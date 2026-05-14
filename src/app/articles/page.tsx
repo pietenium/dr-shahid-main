@@ -16,17 +16,15 @@ export const metadata: Metadata = {
 export default async function ArticlesPage({
   searchParams,
 }: {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
     category?: string;
     articleType?: string;
     search?: string;
-  };
+  }>;
 }) {
-  const page = Number(searchParams.page) || 1;
-  const category = searchParams.category || undefined;
-  const articleType = searchParams.articleType || undefined;
-  const search = searchParams.search || undefined;
+  const { page: pageParam, category, articleType, search } = await searchParams;
+  const page = Number(pageParam) || 1;
 
   let data: PaginatedData<Article> | undefined;
   try {

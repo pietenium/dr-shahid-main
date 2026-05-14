@@ -19,7 +19,7 @@ export async function getResearchList(
 }
 
 export async function getResearchBySlug(slug: string): Promise<Research> {
-  return serverFetch<Research>(`/research/slug/${slug}`, {
+  return serverFetch<Research>(`/research/${slug}`, {
     revalidate: 600,
     tags: ["research", slug],
   });
