@@ -14,7 +14,7 @@ export default function NotFound() {
         className="max-w-2xl w-full text-center space-y-10"
       >
         <div className="space-y-4">
-          <div className="text-6xl md:text-7xl font-black bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
+          <div className="text-6xl md:text-7xl font-black bg-linear-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
             404
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-text-heading-light dark:text-text-heading-dark">

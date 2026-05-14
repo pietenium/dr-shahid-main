@@ -69,9 +69,9 @@ export default async function ResearchDetailPage({ params }: Props) {
         </Link>
 
         <div className="relative overflow-hidden rounded-3xl border border-border-light dark:border-border-dark bg-brand-softbg dark:bg-brand-primary/10">
-          <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/15 via-transparent to-brand-secondary/15" />
+          <div className="absolute inset-0 bg-linear-to-br from-brand-primary/15 via-transparent to-brand-secondary/15" />
           {research.thumbnailImage ? (
-            <div className="relative aspect-[16/6]">
+            <div className="relative aspect-16/6">
               <Image
                 src={research.thumbnailImage.url}
                 alt={research.title}
@@ -80,7 +80,7 @@ export default async function ResearchDetailPage({ params }: Props) {
                 priority
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/10 to-transparent" />
             </div>
           ) : (
             <div className="h-56 md:h-72" />

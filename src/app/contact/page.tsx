@@ -32,7 +32,7 @@ export default async function ContactPage() {
 
             <div className="space-y-8">
               <div className="flex gap-6">
-                <div className="w-12 h-12 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center shrink-0">
                   <svg
                     width="24"
                     height="24"
@@ -59,7 +59,7 @@ export default async function ContactPage() {
               </div>
 
               <div className="flex gap-6">
-                <div className="w-12 h-12 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center shrink-0">
                   <svg
                     width="24"
                     height="24"
@@ -93,7 +93,7 @@ export default async function ContactPage() {
               </div>
 
               <div className="flex gap-6">
-                <div className="w-12 h-12 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center shrink-0">
                   <svg
                     width="24"
                     height="24"
@@ -120,7 +120,7 @@ export default async function ContactPage() {
               </div>
 
               <div className="flex gap-6">
-                <div className="w-12 h-12 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center shrink-0">
                   <svg
                     width="24"
                     height="24"

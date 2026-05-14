@@ -3,19 +3,22 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { NAV_LINKS } from "@/constants/navigation";
+import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/providers/ThemeProvider";
 import { useUIStore } from "@/store/use-ui-store";
 import type { AppInfo } from "@/types/app-info";
 
 export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
-  const [isScrolled, setIsScrolled] = useState(false);
+  const isScrolled = useScrollPosition(20);
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUIStore();
   const pathname = usePathname();
   const { setTheme, resolvedTheme } = useTheme();
+  const menuToggleRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const [mounted, setMounted] = useState(false);
 
@@ -24,23 +27,17 @@ export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
   }, []);
 
   useEffect(() => {
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          setIsScrolled(window.scrollY > 20);
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
     if (pathname) closeMobileMenu();
   }, [pathname, closeMobileMenu]);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      const firstLink = menuRef.current?.querySelector("a");
+      firstLink?.focus();
+    } else {
+      menuToggleRef.current?.focus();
+    }
+  }, [isMobileMenuOpen]);
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
@@ -148,6 +145,7 @@ export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
 
           {/* Mobile Menu Toggle */}
           <button
+            ref={menuToggleRef}
             onClick={toggleMobileMenu}
             className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-text-para-light dark:text-text-para-dark"
             aria-label="Toggle mobile menu"
@@ -201,7 +199,10 @@ export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
             exit={{ opacity: 0, height: 0 }}
             className="lg:hidden bg-white dark:bg-bg-dark border-t border-border-light dark:border-border-dark overflow-hidden"
           >
-            <div className="container mx-auto px-6 py-8 flex flex-col gap-6">
+            <div
+              ref={menuRef}
+              className="container mx-auto px-6 py-8 flex flex-col gap-6"
+            >
               {NAV_LINKS.map((link) => (
                 <Link
                   key={link.href}

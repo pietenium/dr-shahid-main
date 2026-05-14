@@ -1,26 +1,10 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useScrollPosition } from "@/hooks/useScrollPosition";
 
 export const BackToTop = () => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    let ticking = false;
-    const toggleVisibility = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          setIsVisible(window.scrollY > 400);
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener("scroll", toggleVisibility, { passive: true });
-    return () => window.removeEventListener("scroll", toggleVisibility);
-  }, []);
+  const isVisible = useScrollPosition(400);
 
   const scrollToTop = () => {
     window.scrollTo({

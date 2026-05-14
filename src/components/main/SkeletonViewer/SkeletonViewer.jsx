@@ -36,21 +36,24 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-const CYAN = new Color(0x00e5ff);
-const GOLD = new Color(0xffaa00);
+// ─── Brand palette (matches the portfolio's teal #2fa084) ─────────────────────
+const TEAL = new Color(0x2fa084); // brand-primary
+// const TEAL_DARK  = new Color(0x1a6b58); // darker teal for secondary accents
+const TEAL_LIGHT = new Color(0x3fcba0); // lighter teal for highlights
 
 // ─── Pure helpers (no React) ──────────────────────────────────────────────────
 function createScene() {
   const scene = new Scene();
-  scene.background = new Color(0x050a0f);
-  scene.fog = new FogExp2(0x050a0f, 0.02);
+  // Solid dark-teal background — works in both light & dark mode
+  scene.background = new Color(0x060f0c);
+  scene.fog = new FogExp2(0x071a14, 0.016);
   return scene;
 }
 
 function createCamera(w, h) {
-  const cam = new PerspectiveCamera(45, w / h, 0.01, 500);
-  cam.position.set(0, 0.5, 8); // Increased initial distance for better zoom range
+  // 26° vertical FOV — tight enough that skeleton fills frame at minDistance
+  const cam = new PerspectiveCamera(26, w / h, 0.01, 500);
+  cam.position.set(0, 1.0, 5);
   return cam;
 }
 
@@ -61,6 +64,7 @@ function createRenderer(canvas, w, h) {
   const renderer = new WebGLRenderer({
     canvas,
     antialias: true,
+    alpha: true, // Enable transparency
     powerPreference: "high-performance",
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -74,11 +78,11 @@ function createRenderer(canvas, w, h) {
 }
 
 function createLights(scene) {
-  // Ambient base
-  scene.add(new AmbientLight(0x1a2a3a, 1.8));
+  // Warm ambient base
+  scene.add(new AmbientLight(0x1a2e28, 2.0));
 
-  // Main key light - casts shadows
-  const keyLight = new DirectionalLight(0xffeedd, 3.5);
+  // Main key light – warm white
+  const keyLight = new DirectionalLight(0xfff5ee, 3.0);
   keyLight.position.set(3, 8, 4);
   keyLight.castShadow = true;
   keyLight.receiveShadow = true;
@@ -94,28 +98,23 @@ function createLights(scene) {
   keyLight.shadow.normalBias = 0.02;
   scene.add(keyLight);
 
-  // Fill light from opposite side
-  const fillLight = new DirectionalLight(0x446688, 1.8);
+  // Fill light – cool teal from the opposite side
+  const fillLight = new DirectionalLight(0x1a6b58, 1.5);
   fillLight.position.set(-4, 3, -3);
-  fillLight.castShadow = true;
-  fillLight.shadow.mapSize.width = 1024;
-  fillLight.shadow.mapSize.height = 1024;
-  fillLight.shadow.camera.near = 0.5;
-  fillLight.shadow.camera.far = 40;
-  fillLight.shadow.bias = -0.0005;
   scene.add(fillLight);
 
-  // Cyan rim light for edge definition
-  const rimLight1 = new PointLight(0x00e5ff, 1.2);
+  // Teal rim light for edge glow
+  const rimLight1 = new PointLight(0x2fa084, 1.4);
   rimLight1.position.set(-2, 4, -5);
   scene.add(rimLight1);
 
-  const rimLight2 = new PointLight(0x3366aa, 0.8);
+  // Softer secondary rim
+  const rimLight2 = new PointLight(0x3fcba0, 0.7);
   rimLight2.position.set(4, 3, -4);
   scene.add(rimLight2);
 
   // Under-lighting for dramatic effect
-  const underLight = new PointLight(0x225588, 0.6);
+  const underLight = new PointLight(0x1a6b58, 0.5);
   underLight.position.set(0, -1, 2);
   scene.add(underLight);
 }
@@ -127,67 +126,67 @@ function createAdvancedGrid(scene) {
   const gridSize = 12;
   const divisions = 40;
 
-  // Primary grid (cyan)
-  const gridHelper1 = new GridHelper(gridSize, divisions, 0x00e5ff, 0x1a3a5a);
-  gridHelper1.position.y = -1.2;
+  // Primary grid — teal brand color
+  const gridHelper1 = new GridHelper(gridSize, divisions, 0x2fa084, 0x0d3328);
+  gridHelper1.position.y = 0;
   group.add(gridHelper1);
 
-  // Secondary grid (gold/amber) - rotated for complexity
+  // Secondary grid — lighter teal, rotated for depth
   const gridHelper2 = new GridHelper(
     gridSize * 1.2,
     divisions * 1.5,
-    0xffaa00,
-    0x2a1a0a,
+    0x3fcba0,
+    0x0a2219,
   );
-  gridHelper2.position.y = -1.19;
+  gridHelper2.position.y = 0.01;
   gridHelper2.rotation.y = Math.PI / 4;
   group.add(gridHelper2);
 
   // Circular reference rings
   const rings = createCircularRings();
-  rings.position.y = -1.18;
+  rings.position.y = 0.02;
   group.add(rings);
 
   // Outer boundary ring
   const boundaryRing = new Mesh(
     new TorusGeometry(5.8, 0.02, 16, 100),
     new MeshStandardMaterial({
-      color: 0x00e5ff,
-      emissive: new Color(0x004466),
+      color: 0x2fa084,
+      emissive: new Color(0x0d3328),
       emissiveIntensity: 0.5,
       transparent: true,
-      opacity: 0.3,
+      opacity: 0.35,
     }),
   );
   boundaryRing.rotation.x = Math.PI / 2;
-  boundaryRing.position.y = -1.17;
+  boundaryRing.position.y = 0.03;
   group.add(boundaryRing);
 
   // Corner markers
   const corners = createCornerMarkers();
-  corners.position.y = -1.18;
+  corners.position.y = 0.02;
   group.add(corners);
 
   // Central platform (receives shadows beautifully)
   const platform = new Mesh(
     new CylinderGeometry(2.2, 2.2, 0.05, 32),
     new MeshStandardMaterial({
-      color: 0x0a1a2a,
+      color: 0x071a14,
       roughness: 0.4,
       metalness: 0.3,
       transparent: true,
       opacity: 0.7,
-      emissive: new Color(0x112233),
+      emissive: new Color(0x0d3328),
       emissiveIntensity: 0.3,
     }),
   );
-  platform.position.y = -1.2;
+  platform.position.y = -0.025;
   platform.receiveShadow = true;
   group.add(platform);
 
   // Add floating particles around the grid
   const particles = createGridParticles();
-  particles.position.y = -1.15;
+  particles.position.y = 0.05;
   group.add(particles);
 
   scene.add(group);
@@ -202,9 +201,9 @@ function createCircularRings() {
     const ring = new Mesh(
       new TorusGeometry(r, 0.008, 8, 64),
       new MeshStandardMaterial({
-        color: i === 1 ? 0xffaa00 : 0x00e5ff,
-        emissive: i === 1 ? new Color(0x553300) : new Color(0x004466),
-        emissiveIntensity: 0.3,
+        color: i === 1 ? 0x3fcba0 : 0x2fa084,
+        emissive: i === 1 ? new Color(0x1a6b58) : new Color(0x0d3328),
+        emissiveIntensity: 0.4,
         transparent: true,
         opacity: 0.15 + i * 0.1,
       }),
@@ -229,8 +228,8 @@ function createCornerMarkers() {
     const marker = new Mesh(
       new BoxGeometry(0.15, 0.02, 0.15),
       new MeshStandardMaterial({
-        color: 0x00e5ff,
-        emissive: new Color(0x004466),
+        color: 0x2fa084,
+        emissive: new Color(0x0d3328),
         emissiveIntensity: 0.8,
         transparent: true,
         opacity: 0.6,
@@ -259,10 +258,10 @@ function createGridParticles() {
   geometry.setAttribute("position", new BufferAttribute(positions, 3));
 
   const material = new PointsMaterial({
-    color: 0x00e5ff,
+    color: 0x2fa084,
     size: 0.015,
     transparent: true,
-    opacity: 0.4,
+    opacity: 0.5,
     blending: AdditiveBlending,
   });
 
@@ -306,15 +305,16 @@ function autoFitModel(gltf) {
   box1.getSize(size1);
   const maxDim = Math.max(size1.x, size1.y, size1.z);
 
-  if (maxDim > 0) root.scale.setScalar(2.2 / maxDim);
+  if (maxDim > 0) root.scale.setScalar(1.9 / maxDim); // Slightly larger for better detail while remaining visible
 
   const box2 = new Box3().setFromObject(root);
   const center = new Vector3();
   box2.getCenter(center);
   root.position.sub(center);
 
-  // Position feet at y = 0
-  root.position.y -= box2.min.y;
+  // Position feet precisely at y = 0
+  const box3 = new Box3().setFromObject(root);
+  root.position.y -= box3.min.y;
 
   return root;
 }
@@ -378,11 +378,11 @@ function applyHighlight(mesh) {
       m.userData._origRoughness = m.roughness;
     }
 
-    // Apply premium highlight effect
-    m.color.lerp(CYAN, 0.7);
-    m.emissive.copy(GOLD);
-    m.emissiveIntensity = 0.4;
-    m.roughness = 0.3;
+    // Apply teal-brand highlight effect
+    m.color.lerp(TEAL_LIGHT, 0.6);
+    m.emissive.copy(TEAL);
+    m.emissiveIntensity = 0.5;
+    m.roughness = 0.25;
 
     if (m.emissive) {
       m.needsUpdate = true;
@@ -451,8 +451,8 @@ export default function SkeletonViewer({ showDebug = false }) {
       scene.add(debugGrid);
     }
 
-    // Add subtle environment reflection
-    const envLight = new HemisphereLight(0x446688, 0x223344, 1.2);
+    // Add subtle environment reflection – teal hemisphere
+    const envLight = new HemisphereLight(0x2fa084, 0x0d3328, 0.8);
     scene.add(envLight);
 
     stateRef.current = {
@@ -486,8 +486,20 @@ export default function SkeletonViewer({ showDebug = false }) {
         const box = new Box3().setFromObject(model);
         const size = new Vector3();
         box.getSize(size);
-        camera.position.set(2, size.y * 0.6, size.z * 4.5); // Increased distance for better zoom range
-        controls.target.set(0, size.y * 0.4, 0);
+
+        // Target slightly below the centre for a portrait composition
+        // (leaves less empty sky above head, and shows more floor/platform)
+        const targetY = size.y * 0.45;
+
+        // Distance calibrated to fill ~80% of frame height
+        const dist = size.y * 2.6;
+        camera.position.set(0, targetY, dist);
+        controls.target.set(0, targetY, 0);
+
+        controls.minDistance = size.y * 1.2;
+        controls.maxDistance = size.y * 4.0;
+        // Disable pan so skeleton stays centred
+        controls.enablePan = false;
         controls.update();
 
         setInfo({ phase: "ready", pct: 100, bone: null, error: null });
@@ -690,11 +702,10 @@ function Hint({ icon, label }) {
 // ─── Enhanced Styles ──────────────────────────────────────────────────────────
 const S = {
   wrapper: {
-    position: "relative", // ← CHANGED from "fixed"
+    position: "relative",
     width: "100%",
-    height: "100vh",
-    minHeight: "500px", // ← ADDED minimum height
-    background: "radial-gradient(circle at 50% 30%, #0a1a2a, #050a0f)",
+    height: "100%",
+    minHeight: "400px",
     fontFamily: "'Share Tech Mono','Courier New',monospace",
     overflow: "hidden",
     userSelect: "none",
@@ -738,11 +749,11 @@ const S = {
     animation: "spin 1s linear infinite",
   },
   loaderText: {
-    color: "#00e5ff",
+    color: "#2fa084",
     fontSize: 12,
     letterSpacing: "0.25em",
     margin: 0,
-    textShadow: "0 0 10px rgba(0,229,255,0.5)",
+    textShadow: "0 0 10px rgba(47,160,132,0.6)",
   },
   progressBar: {
     width: 200,
@@ -753,7 +764,7 @@ const S = {
   },
   progressFill: {
     height: "100%",
-    background: "linear-gradient(90deg, #00e5ff, #ffaa00)",
+    background: "linear-gradient(90deg, #2fa084, #3fcba0)",
     transition: "width 0.3s ease",
   },
   errText: {
@@ -778,16 +789,16 @@ const S = {
   },
   panel: {
     position: "absolute",
-    top: 24,
-    right: 24,
-    width: 260,
-    padding: "16px 20px",
-    background: "rgba(8,14,20,.92)",
-    border: "1px solid rgba(0,229,255,.2)",
-    borderRadius: 4,
-    backdropFilter: "blur(16px)",
+    top: 16,
+    right: 16,
+    width: 200,
+    padding: "12px 16px",
+    background: "rgba(7,26,20,.7)",
+    border: "1px solid rgba(47,160,132,.25)",
+    borderRadius: 10,
+    backdropFilter: "blur(12px)",
     zIndex: 10,
-    boxShadow: "0 0 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,255,0.05) inset",
+    boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
   },
   panelHeader: {
     display: "flex",
@@ -813,10 +824,11 @@ const S = {
     padding: "6px 0",
   },
   rowLabel: {
-    color: "#3a6a8a",
+    color: "#2fa084",
     fontSize: 9,
     letterSpacing: "0.15em",
     textTransform: "uppercase",
+    opacity: 0.7,
   },
   rowValue: {
     fontSize: 11,
@@ -831,44 +843,44 @@ const S = {
   divider: {
     height: 1,
     background:
-      "linear-gradient(90deg, transparent, rgba(0,229,255,.15), transparent)",
-    margin: "10px 0",
+      "linear-gradient(90deg, transparent, rgba(47,160,132,.2), transparent)",
+    margin: "8px 0",
   },
   highlightIndicator: {
     display: "flex",
     alignItems: "center",
     gap: 6,
-    marginTop: 10,
-    padding: "6px 8px",
-    background: "rgba(255,170,0,0.08)",
-    border: "1px solid rgba(255,170,0,0.2)",
-    borderRadius: 2,
+    marginTop: 8,
+    padding: "5px 8px",
+    background: "rgba(47,160,132,0.1)",
+    border: "1px solid rgba(47,160,132,0.3)",
+    borderRadius: 4,
   },
   highlightDot: {
-    color: "#ffaa00",
+    color: "#2fa084",
     fontSize: 8,
     animation: "pulse 1.5s ease-in-out infinite",
   },
   highlightText: {
-    color: "#ffaa00",
+    color: "#3fcba0",
     fontSize: 8,
     letterSpacing: "0.15em",
     textTransform: "uppercase",
   },
   footer: {
     position: "absolute",
-    bottom: 24,
+    bottom: 16,
     left: "50%",
     transform: "translateX(-50%)",
     display: "flex",
-    gap: 24,
-    padding: "10px 28px",
-    background: "rgba(8,14,20,.88)",
-    border: "1px solid rgba(0,229,255,.15)",
+    gap: 20,
+    padding: "8px 22px",
+    background: "rgba(7,26,20,.85)",
+    border: "1px solid rgba(47,160,132,.2)",
     borderRadius: 30,
     backdropFilter: "blur(16px)",
     zIndex: 10,
-    boxShadow: "0 0 30px rgba(0,0,0,0.4)",
+    boxShadow: "0 0 24px rgba(0,0,0,0.35)",
   },
   hint: {
     display: "flex",
@@ -877,15 +889,16 @@ const S = {
     opacity: 0.8,
   },
   hintIcon: {
-    color: "#00e5ff",
+    color: "#2fa084",
     fontSize: 13,
-    textShadow: "0 0 8px rgba(0,229,255,0.5)",
+    textShadow: "0 0 8px rgba(47,160,132,0.6)",
   },
   hintLabel: {
-    color: "#4a7a9a",
+    color: "#3fcba0",
     fontSize: 9,
     letterSpacing: "0.12em",
     whiteSpace: "nowrap",
     textTransform: "uppercase",
+    opacity: 0.75,
   },
 };

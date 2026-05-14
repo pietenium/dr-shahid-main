@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ResearchCard } from "@/components/research/ResearchCard";
 import { ResearchFilters } from "@/components/research/ResearchFilters";
@@ -10,6 +10,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
 import { fetchResearchClient } from "@/lib/api/research";
+import { useSetParams } from "@/lib/url";
 import type { PaginatedData } from "@/types/api";
 import type { Research, UploadType } from "@/types/research";
 
@@ -18,9 +19,8 @@ export function ResearchClient({
 }: {
   initialResearch?: PaginatedData<Research>;
 }) {
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const setParams = useSetParams();
 
   const page = Number(searchParams.get("page") || "1") || 1;
   const uploadType = (searchParams.get("uploadType") || "") as UploadType | "";
@@ -48,16 +48,6 @@ export function ResearchClient({
       !uploadType && !search && page === 1 ? initialResearch : undefined,
     staleTime: 5 * 60 * 1000,
   });
-
-  const setParams = (next: Record<string, string | undefined>) => {
-    const params = new URLSearchParams(searchParams.toString());
-    for (const [k, v] of Object.entries(next)) {
-      if (!v) params.delete(k);
-      else params.set(k, v);
-    }
-    const qs = params.toString();
-    router.push(qs ? `${pathname}?${qs}` : pathname);
-  };
 
   return (
     <div className="space-y-10">
