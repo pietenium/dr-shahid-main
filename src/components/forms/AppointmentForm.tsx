@@ -150,7 +150,7 @@ export const AppointmentForm = () => {
 
   if (submitted) {
     return (
-      <div className="min-h-[400px] flex flex-col items-center justify-center space-y-8 text-center p-8">
+      <div className="min-h-100 flex flex-col items-center justify-center space-y-8 text-center p-8">
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -247,7 +247,7 @@ export const AppointmentForm = () => {
         </div>
       </div>
 
-      <div className="min-h-[400px] flex flex-col">
+      <div className="min-h-100 flex flex-col">
         <AnimatePresence mode="wait">
           {step === 0 && (
             <motion.div
@@ -455,7 +455,7 @@ export const AppointmentForm = () => {
                 placeholder="Briefly describe your orthopedic concern..."
                 error={errors.message?.message}
                 maxLength={500}
-                className="min-h-[160px]"
+                className="min-h-40"
                 {...register("message")}
               />
             </motion.div>
@@ -505,7 +505,7 @@ export const AppointmentForm = () => {
             <Button
               type="button"
               onClick={handleNext}
-              className="flex-[2] sm:flex-none h-12 px-10 text-base font-bold shadow-lg shadow-brand-primary/20"
+              className="flex-2 sm:flex-none h-12 px-10 text-base font-bold shadow-lg shadow-brand-primary/20"
             >
               Continue
             </Button>
@@ -513,7 +513,7 @@ export const AppointmentForm = () => {
             <Button
               type="submit"
               loading={appointmentMutation.isPending}
-              className="flex-[2] sm:flex-none h-12 px-10 text-base font-bold shadow-lg shadow-brand-primary/20"
+              className="flex-2 sm:flex-none h-12 px-10 text-base font-bold shadow-lg shadow-brand-primary/20"
             >
               Submit Request
             </Button>
