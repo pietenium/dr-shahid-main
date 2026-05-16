@@ -25,7 +25,10 @@ export function SearchClient() {
     activeType: type,
     setActiveType: setType,
     addRecentSearch,
+    recentSearches,
+    clearRecentSearches,
   } = useSearchStore();
+  const [focused, setFocused] = useState(false);
   const debounced = useDebounce(query.trim(), 400);
 
   const queryKey = useMemo(
@@ -64,6 +67,8 @@ export function SearchClient() {
           placeholder="Type at least 2 characters…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           autoFocus
         />
 
@@ -90,10 +95,56 @@ export function SearchClient() {
         </div>
 
         {debounced.length < 2 ? (
-          <EmptyState
-            title="Start typing to search"
-            description="Try searching for a condition, procedure, or publication title."
-          />
+          focused && query.trim().length === 0 && recentSearches.length ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-text-para-light dark:text-text-para-dark">
+                    Recent searches
+                  </h3>
+                  <p className="text-xs text-text-para-light dark:text-text-para-dark opacity-70">
+                    Tap a previous search to try again.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={clearRecentSearches}
+                  className="text-xs font-semibold text-brand-primary hover:text-brand-hover"
+                >
+                  Clear
+                </button>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {recentSearches.map((item) => (
+                  <button
+                    key={`${item.query}-${item.type}-${item.timestamp}`}
+                    type="button"
+                    onClick={() => {
+                      setType(item.type);
+                      setQuery(item.query);
+                    }}
+                    className="rounded-2xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark px-4 py-3 text-left text-sm text-text-heading-light dark:text-text-heading-dark hover:border-brand-primary transition"
+                  >
+                    <span className="font-semibold">{item.query}</span>
+                    <div className="text-[11px] text-text-para-light dark:text-text-para-dark opacity-80">
+                      {item.type === "all"
+                        ? "All"
+                        : item.type === "article"
+                          ? "Articles"
+                          : item.type === "research"
+                            ? "Research"
+                            : "Testimonials"}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <EmptyState
+              title="Start typing to search"
+              description="Try searching for a condition, procedure, or publication title."
+            />
+          )
         ) : isFetching ? (
           <div className="space-y-4">
             <Skeleton variant="text" className="h-5 w-40" />

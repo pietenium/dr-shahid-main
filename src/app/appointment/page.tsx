@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppointmentForm } from "@/components/forms/AppointmentForm";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { FALLBACKS } from "@/constants/fallbacks";
 
@@ -12,6 +13,7 @@ export default function AppointmentPage() {
   return (
     <div className="container mx-auto px-6 py-12">
       <div className="max-w-4xl mx-auto">
+        <Breadcrumbs title="Book Appointment" />
         <SectionHeading
           badge="Priority Care"
           title="Schedule Your Consultation"

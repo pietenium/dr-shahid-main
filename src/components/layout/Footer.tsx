@@ -1,5 +1,13 @@
 "use client";
 
+import {
+  faFacebookF,
+  faInstagram,
+  faLinkedinIn,
+  faXTwitter,
+  faYoutube,
+} from "@fortawesome/free-brands-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 import { FALLBACKS } from "@/constants/fallbacks";
 import { FOOTER_LINKS } from "@/constants/navigation";
@@ -37,19 +45,33 @@ export const Footer = ({ appInfo }: { appInfo?: AppInfo }) => {
                 ] as const
               )
                 .filter(([, url]) => Boolean(url))
-                .map(([key, url]) => (
-                  <a
-                    key={key}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-8 h-8 rounded-full border border-border-dark/20 dark:border-white/10 flex items-center justify-center hover:bg-brand-primary hover:border-brand-primary transition-all duration-300 group"
-                    aria-label={key}
-                  >
-                    <span className="sr-only">{key}</span>
-                    <div className="w-3 h-3 bg-text-para-light group-hover:bg-white dark:bg-white/40 dark:group-hover:bg-white/40 rounded-full" />
-                  </a>
-                ))}
+                .map(([key, url]) => {
+                  const icons: Record<
+                    string,
+                    import("@fortawesome/fontawesome-svg-core").IconDefinition
+                  > = {
+                    facebook: faFacebookF,
+                    twitter: faXTwitter,
+                    linkedin: faLinkedinIn,
+                    youtube: faYoutube,
+                    instagram: faInstagram,
+                  };
+                  return (
+                    <a
+                      key={key}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 rounded-full border border-border-dark/20 dark:border-white/10 flex items-center justify-center hover:bg-brand-primary hover:border-brand-primary transition-all duration-300 group"
+                      aria-label={key}
+                    >
+                      <FontAwesomeIcon
+                        icon={icons[key]}
+                        className="w-3 h-3 text-text-para-light group-hover:text-white"
+                      />
+                    </a>
+                  );
+                })}
             </div>
           </div>
 

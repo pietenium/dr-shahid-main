@@ -80,7 +80,6 @@ export const TestimonialCard = ({
                 src={testimonial.image.url}
                 alt={testimonial.name}
                 fill
-                unoptimized
                 loading="lazy"
                 className="object-cover transition-transform duration-500 group-hover/avatar:scale-110"
               />

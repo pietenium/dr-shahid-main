@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { TestimonialCard } from "@/components/testimonials/TestimonialCard";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -15,6 +16,7 @@ export default async function TestimonialsPage() {
 
   return (
     <div className="container mx-auto px-6 py-20">
+      <Breadcrumbs title="Patient Stories" />
       <SectionHeading
         badge="Wall of Gratitude"
         title="Patient Success Stories"

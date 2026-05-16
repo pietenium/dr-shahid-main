@@ -14,3 +14,14 @@ export async function createAppointment(
   );
   return data.data;
 }
+
+export async function getBookedSlots(date: string): Promise<string[]> {
+  try {
+    const { data } = await api.get<
+      ApiResponse<Array<{ preferredTime: string }>>
+    >("/appointments/booked-slots", { params: { date } });
+    return data.data.map((slot) => slot.preferredTime);
+  } catch (_error) {
+    return [];
+  }
+}

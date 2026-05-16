@@ -2,7 +2,9 @@
 
 import type React from "react";
 import { AnalyticsTracker } from "@/components/shared/AnalyticsTracker";
+import { CookieConsent } from "@/components/shared/CookieConsent";
 import { PageTransition } from "@/components/shared/PageTransition";
+import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
 import { BackToTop } from "@/components/ui/BackToTop";
 import type { AppInfo } from "@/types/app-info";
 import { Footer } from "./Footer";
@@ -27,6 +29,8 @@ export const AppShell = ({ children, appInfo }: AppShellProps) => {
       <AppShellContent>{children}</AppShellContent>
       <Footer appInfo={appInfo} />
       <BackToTop />
+      <CookieConsent />
+      <WhatsAppButton phone={appInfo?.phone} />
     </>
   );
 };

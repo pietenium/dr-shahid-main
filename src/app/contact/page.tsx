@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ContactForm } from "@/components/forms/ContactForm";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { getAppInfo } from "@/lib/api/app-info";
@@ -21,6 +22,7 @@ export default async function ContactPage() {
   return (
     <div className="container mx-auto px-6 py-12">
       <div className="max-w-5xl mx-auto">
+        <Breadcrumbs title="Contact" />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Info Column */}
           <div className="space-y-12">

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
-import { createAppointment } from "@/lib/api/appointments";
+import { createAppointment, getBookedSlots } from "@/lib/api/appointments";
 import { extractHttpStatus } from "@/lib/utils";
 import { useAppointmentPrefill } from "@/store/use-appointment-prefill";
 
@@ -49,6 +49,7 @@ export const AppointmentForm = () => {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<AppointmentFormData>({
     resolver: zodResolver(appointmentSchema),
@@ -61,6 +62,18 @@ export const AppointmentForm = () => {
   useEffect(() => {
     return () => clearPrefill();
   }, [clearPrefill]);
+
+  const preferredDate = watch("preferredDate");
+  const preferredTime = watch("preferredTime");
+  const currentStep = preferredDate ? (preferredTime ? 2 : 1) : 0;
+
+  const { data: bookedSlots = [] } = useQuery({
+    queryKey: ["booked-slots", preferredDate],
+    enabled: !!preferredDate,
+    queryFn: async () => getBookedSlots(preferredDate),
+    retry: false,
+    staleTime: 1000 * 60,
+  });
 
   const appointmentMutation = useMutation({
     mutationFn: createAppointment,
@@ -160,6 +173,44 @@ export const AppointmentForm = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="flex flex-col gap-3 mb-6">
+        <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] font-bold text-text-para-light dark:text-text-para-dark">
+          {["Personal Info", "Date & Time", "Additional Notes"].map(
+            (label, index) => {
+              const step = index;
+              const isActive = step <= currentStep;
+              return (
+                <div key={label} className="flex items-center gap-3">
+                  <div
+                    className={
+                      "flex h-8 w-8 items-center justify-center rounded-full border text-[10px] font-semibold " +
+                      (isActive
+                        ? "border-brand-primary bg-brand-primary text-white"
+                        : "border-border-light bg-transparent text-text-para-light dark:text-text-para-dark")
+                    }
+                  >
+                    {step + 1}
+                  </div>
+                  <span
+                    className={
+                      "text-xs " +
+                      (isActive
+                        ? "text-text-heading-light dark:text-text-heading-dark"
+                        : "text-text-para-light dark:text-text-para-dark")
+                    }
+                  >
+                    {label}
+                  </span>
+                  {step < 2 ? (
+                    <span className="h-px w-10 bg-border-light dark:bg-border-dark" />
+                  ) : null}
+                </div>
+              );
+            },
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Input
           label="Patient Name"
@@ -195,24 +246,85 @@ export const AppointmentForm = () => {
       <Select
         label="Preferred Time Slot"
         options={[
-          { value: "10:00 AM", label: "10:00 AM" },
-          { value: "10:30 AM", label: "10:30 AM" },
-          { value: "11:00 AM", label: "11:00 AM" },
-          { value: "11:30 AM", label: "11:30 AM" },
-          { value: "12:00 PM", label: "12:00 PM" },
-          { value: "04:00 PM", label: "04:00 PM" },
-          { value: "04:30 PM", label: "04:30 PM" },
-          { value: "05:00 PM", label: "05:00 PM" },
-          { value: "05:30 PM", label: "05:30 PM" },
-          { value: "06:00 PM", label: "06:00 PM" },
-          { value: "06:30 PM", label: "06:30 PM" },
-          { value: "07:00 PM", label: "07:00 PM" },
-          { value: "07:30 PM", label: "07:30 PM" },
-          { value: "08:00 PM", label: "08:00 PM" },
+          {
+            value: "10:00 AM",
+            label: `10:00 AM${bookedSlots.includes("10:00 AM") ? " (Booked)" : ""}`,
+            disabled: bookedSlots.includes("10:00 AM"),
+          },
+          {
+            value: "10:30 AM",
+            label: `10:30 AM${bookedSlots.includes("10:30 AM") ? " (Booked)" : ""}`,
+            disabled: bookedSlots.includes("10:30 AM"),
+          },
+          {
+            value: "11:00 AM",
+            label: `11:00 AM${bookedSlots.includes("11:00 AM") ? " (Booked)" : ""}`,
+            disabled: bookedSlots.includes("11:00 AM"),
+          },
+          {
+            value: "11:30 AM",
+            label: `11:30 AM${bookedSlots.includes("11:30 AM") ? " (Booked)" : ""}`,
+            disabled: bookedSlots.includes("11:30 AM"),
+          },
+          {
+            value: "12:00 PM",
+            label: `12:00 PM${bookedSlots.includes("12:00 PM") ? " (Booked)" : ""}`,
+            disabled: bookedSlots.includes("12:00 PM"),
+          },
+          {
+            value: "04:00 PM",
+            label: `04:00 PM${bookedSlots.includes("04:00 PM") ? " (Booked)" : ""}`,
+            disabled: bookedSlots.includes("04:00 PM"),
+          },
+          {
+            value: "04:30 PM",
+            label: `04:30 PM${bookedSlots.includes("04:30 PM") ? " (Booked)" : ""}`,
+            disabled: bookedSlots.includes("04:30 PM"),
+          },
+          {
+            value: "05:00 PM",
+            label: `05:00 PM${bookedSlots.includes("05:00 PM") ? " (Booked)" : ""}`,
+            disabled: bookedSlots.includes("05:00 PM"),
+          },
+          {
+            value: "05:30 PM",
+            label: `05:30 PM${bookedSlots.includes("05:30 PM") ? " (Booked)" : ""}`,
+            disabled: bookedSlots.includes("05:30 PM"),
+          },
+          {
+            value: "06:00 PM",
+            label: `06:00 PM${bookedSlots.includes("06:00 PM") ? " (Booked)" : ""}`,
+            disabled: bookedSlots.includes("06:00 PM"),
+          },
+          {
+            value: "06:30 PM",
+            label: `06:30 PM${bookedSlots.includes("06:30 PM") ? " (Booked)" : ""}`,
+            disabled: bookedSlots.includes("06:30 PM"),
+          },
+          {
+            value: "07:00 PM",
+            label: `07:00 PM${bookedSlots.includes("07:00 PM") ? " (Booked)" : ""}`,
+            disabled: bookedSlots.includes("07:00 PM"),
+          },
+          {
+            value: "07:30 PM",
+            label: `07:30 PM${bookedSlots.includes("07:30 PM") ? " (Booked)" : ""}`,
+            disabled: bookedSlots.includes("07:30 PM"),
+          },
+          {
+            value: "08:00 PM",
+            label: `08:00 PM${bookedSlots.includes("08:00 PM") ? " (Booked)" : ""}`,
+            disabled: bookedSlots.includes("08:00 PM"),
+          },
         ]}
         error={errors.preferredTime?.message}
         {...register("preferredTime")}
       />
+      {bookedSlots.length > 0 ? (
+        <p className="text-xs text-text-para-light dark:text-text-para-dark opacity-60">
+          {bookedSlots.length} time slot(s) already booked for selected date.
+        </p>
+      ) : null}
       <Textarea
         label="Message (optional)"
         placeholder="Briefly describe your orthopedic concern..."
