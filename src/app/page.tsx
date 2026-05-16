@@ -2,6 +2,7 @@ import { About } from "@/components/home/About";
 import { CTASection } from "@/components/home/CTASection";
 import { FeaturedArticles } from "@/components/home/FeaturedArticles";
 import { Hero } from "@/components/home/Hero";
+import { NewsletterCTA } from "@/components/home/NewsletterCTA";
 import { Specialties } from "@/components/home/Specialties";
 import { TestimonialsCarousel } from "@/components/home/TestimonialsCarousel";
 import { TestimonialsCTA } from "@/components/home/TestimonialsCTA";
@@ -17,7 +18,7 @@ export default async function Home() {
   ]);
 
   return (
-    <div className="flex flex-col w-full overflow-x-hidden">
+    <div className="flex flex-col w-full">
       <Hero />
       <Specialties />
       <About />
@@ -27,11 +28,12 @@ export default async function Home() {
       ) : null}
 
       {testimonials?.docs?.length ? (
-        <TestimonialsCarousel testimonials={testimonials.docs} />
+        <TestimonialsCarousel testimonials={testimonials.docs.slice(0, 5)} />
       ) : null}
 
       <CTASection clinicHours={appInfo?.clinicHours} />
       <TestimonialsCTA />
+      <NewsletterCTA />
     </div>
   );
 }

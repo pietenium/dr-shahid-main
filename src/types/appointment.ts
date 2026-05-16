@@ -24,5 +24,5 @@ export interface AppointmentCreatePayload {
   message?: string;
   preferredDate: string;
   preferredTime: string;
-  recaptchaToken: string;
+  recaptchaToken?: string;
 }

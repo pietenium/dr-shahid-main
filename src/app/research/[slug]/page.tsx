@@ -2,18 +2,21 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
+import { ShareButtons } from "@/components/shared/ShareButtons";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { getResearchBySlug } from "@/lib/api/research";
 import { formatDate } from "@/lib/utils";
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
   try {
-    const research = await getResearchBySlug(params.slug);
+    const research = await getResearchBySlug(slug);
     return {
       title: research.title,
       description: research.description || research.title,
@@ -25,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           : [],
         type: "article",
       },
-      alternates: { canonical: `/research/${params.slug}` },
+      alternates: { canonical: `/research/${slug}` },
     };
   } catch (_error) {
     return { title: "Research Not Found" };
@@ -33,9 +36,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ResearchDetailPage({ params }: Props) {
+  const { slug } = await params;
   let research: import("@/types/research").Research;
   try {
-    research = await getResearchBySlug(params.slug);
+    research = await getResearchBySlug(slug);
   } catch (_error) {
     notFound();
   }
@@ -46,40 +50,49 @@ export default async function ResearchDetailPage({ params }: Props) {
 
   return (
     <article className="container mx-auto px-6 py-12 max-w-5xl">
+      <Breadcrumbs title={research.title} />
+
       <div className="space-y-10">
-        <Link
-          href="/research"
-          className="inline-flex items-center gap-2 text-sm font-bold text-brand-primary hover:text-brand-hover uppercase tracking-widest transition-colors"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <Link
+            href="/research"
+            className="inline-flex items-center gap-2 text-sm font-bold text-brand-primary hover:text-brand-hover uppercase tracking-widest transition-colors"
           >
-            <title>Back Icon</title>
-            <line x1="19" y1="12" x2="5" y2="12" />
-            <polyline points="12 19 5 12 12 5" />
-          </svg>
-          Back to Research
-        </Link>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <title>Back Icon</title>
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+            Back to Research
+          </Link>
+          <ShareButtons
+            title={research.title}
+            slug={research.slug}
+            basePath="research"
+          />
+        </div>
 
         <div className="relative overflow-hidden rounded-3xl border border-border-light dark:border-border-dark bg-brand-softbg dark:bg-brand-primary/10">
-          <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/15 via-transparent to-brand-secondary/15" />
+          <div className="absolute inset-0 bg-linear-to-br from-brand-primary/15 via-transparent to-brand-secondary/15" />
           {research.thumbnailImage ? (
-            <div className="relative aspect-[16/6]">
+            <div className="relative aspect-16/6">
               <Image
                 src={research.thumbnailImage.url}
                 alt={research.title}
                 fill
-                unoptimized
+                priority
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/10 to-transparent" />
             </div>
           ) : (
             <div className="h-56 md:h-72" />

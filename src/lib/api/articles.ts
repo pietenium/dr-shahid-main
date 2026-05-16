@@ -25,7 +25,7 @@ export async function getArticles(
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article> {
-  return serverFetch<Article>(`/articles/slug/${slug}`, {
+  return serverFetch<Article>(`/articles/${slug}`, {
     revalidate: 600,
     tags: ["article", slug],
   });
@@ -39,10 +39,36 @@ export async function getCategories(): Promise<ArticleCategory[]> {
 }
 
 // Client-side version for filtered/paginated fetches
-export async function fetchArticlesClient(params: ArticleFilterParams) {
-  const { data } = await api.get<ApiResponse<PaginatedData<Article>>>(
+export async function fetchArticlesClient(
+  params: ArticleFilterParams,
+): Promise<PaginatedData<Article>> {
+  const { data: response } = await api.get<ApiResponse<Article[]>>(
     "/articles",
-    { params },
+    {
+      params,
+    },
   );
-  return data.data;
+
+  // Extract meta from the response (axios structure: response.data is the ApiResponse)
+  // Wait, ApiResponse has data and meta.
+  // axios.get returns { data: ApiResponse }
+  const { data, meta } = response;
+
+  if (meta) {
+    return {
+      docs: data,
+      totalDocs: meta.total,
+      limit: meta.limit,
+      totalPages: meta.totalPage,
+      page: meta.page,
+    };
+  }
+
+  return {
+    docs: data || [],
+    totalDocs: 0,
+    limit: 10,
+    totalPages: 0,
+    page: 1,
+  };
 }

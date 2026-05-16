@@ -8,11 +8,13 @@ import { getAppInfo } from "@/lib/api/app-info";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { RecaptchaProvider } from "@/providers/RecaptchaProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import type { AppInfo } from "@/types/app-info";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -47,7 +49,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  let appInfo: import("@/types/app-info").AppInfo | undefined;
+  let appInfo: AppInfo | undefined;
   try {
     appInfo = await getAppInfo();
   } catch (error) {
@@ -62,6 +64,32 @@ export default async function RootLayout({
       className={`${inter.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <link
+          rel="preconnect"
+          href={process.env.NEXT_PUBLIC_PAYLOAD_URL || "http://127.0.0.1:5000"}
+        />
+        <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: inline theme bootstrapping script is safe and required for FOUC prevention
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  if (
+                    theme === 'dark' ||
+                    (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+                  ) {
+                    document.documentElement.classList.add('dark');
+                  }
+                } catch (e) {
+                  // Ignore localStorage failures.
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-bg-light dark:bg-bg-dark text-text-heading-light dark:text-text-heading-dark">
         <ThemeProvider>
           <QueryProvider>

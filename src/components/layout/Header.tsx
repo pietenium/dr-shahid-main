@@ -3,28 +3,42 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { FALLBACKS } from "@/constants/fallbacks";
 import { NAV_LINKS } from "@/constants/navigation";
+import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/providers/ThemeProvider";
+import { useUIStore } from "@/store/use-ui-store";
 import type { AppInfo } from "@/types/app-info";
 
 export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isScrolled = useScrollPosition(20);
+  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUIStore();
   const pathname = usePathname();
   const { setTheme, resolvedTheme } = useTheme();
+  const menuToggleRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (pathname) setIsMobileMenuOpen(false);
-  }, [pathname]);
+    if (pathname) closeMobileMenu();
+  }, [pathname, closeMobileMenu]);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      const firstLink = menuRef.current?.querySelector("a");
+      firstLink?.focus();
+    } else {
+      menuToggleRef.current?.focus();
+    }
+  }, [isMobileMenuOpen]);
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
@@ -47,10 +61,10 @@ export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
           </div>
           <div className="flex flex-col">
             <span className="font-bold text-lg leading-none text-text-heading-light dark:text-text-heading-dark">
-              {appInfo?.doctorName ?? "Dr. Sahidur Rahman Khan"}
+              {appInfo?.doctorName ?? FALLBACKS.doctorName}
             </span>
             <span className="text-[10px] uppercase tracking-widest text-brand-primary font-bold">
-              {appInfo?.doctorSpecialty ?? "Orthopedic Surgeon"}
+              {appInfo?.doctorSpecialty ?? FALLBACKS.specialty}
             </span>
           </div>
         </Link>
@@ -62,13 +76,19 @@ export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
               key={link.href}
               href={link.href}
               className={cn(
-                "text-sm font-semibold transition-colors hover:text-brand-primary",
+                "relative text-sm font-semibold transition-colors hover:text-brand-primary group",
                 pathname === link.href
                   ? "text-brand-primary"
                   : "text-text-para-light dark:text-text-para-dark",
               )}
             >
               {link.label}
+              <span
+                className={cn(
+                  "absolute -bottom-1 left-0 h-0.5 bg-brand-primary transition-all duration-300",
+                  pathname === link.href ? "w-full" : "w-0 group-hover:w-full",
+                )}
+              />
             </Link>
           ))}
         </nav>
@@ -77,11 +97,13 @@ export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
         <div className="flex items-center gap-4">
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-text-para-light dark:text-text-para-dark"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-text-para-light dark:text-text-para-dark min-w-9 min-h-9 flex items-center justify-center"
             aria-label="Toggle theme"
             type="button"
           >
-            {resolvedTheme === "dark" ? (
+            {!mounted ? (
+              <div className="w-5 h-5 opacity-0" />
+            ) : resolvedTheme === "dark" ? (
               <svg
                 width="20"
                 height="20"
@@ -130,9 +152,12 @@ export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
 
           {/* Mobile Menu Toggle */}
           <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            ref={menuToggleRef}
+            onClick={toggleMobileMenu}
             className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-text-para-light dark:text-text-para-dark"
             aria-label="Toggle mobile menu"
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-menu"
             type="button"
           >
             {isMobileMenuOpen ? (
@@ -175,29 +200,45 @@ export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
+            id="mobile-menu"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="lg:hidden bg-white dark:bg-bg-dark border-t border-border-light dark:border-border-dark overflow-hidden"
           >
-            <div className="container mx-auto px-6 py-8 flex flex-col gap-6">
-              {NAV_LINKS.map((link) => (
-                <Link
+            <div
+              ref={menuRef}
+              className="container mx-auto px-6 py-8 flex flex-col gap-6"
+            >
+              {NAV_LINKS.map((link, i) => (
+                <motion.div
                   key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "text-lg font-bold transition-colors",
-                    pathname === link.href
-                      ? "text-brand-primary"
-                      : "text-text-para-light dark:text-text-para-dark",
-                  )}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
                 >
-                  {link.label}
-                </Link>
+                  <Link
+                    href={link.href}
+                    className={cn(
+                      "text-lg font-bold transition-colors block w-full",
+                      pathname === link.href
+                        ? "text-brand-primary"
+                        : "text-text-para-light dark:text-text-para-dark",
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                </motion.div>
               ))}
-              <Button href="/appointment" className="w-full mt-4">
-                Book Appointment
-              </Button>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: NAV_LINKS.length * 0.05 }}
+              >
+                <Button href="/appointment" className="w-full mt-4">
+                  Book Appointment
+                </Button>
+              </motion.div>
             </div>
           </motion.div>
         )}

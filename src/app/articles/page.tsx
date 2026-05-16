@@ -4,6 +4,8 @@ import { ArticlesClient } from "@/components/articles/ArticlesClient";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getArticles, getCategories } from "@/lib/api/articles";
+import type { PaginatedData } from "@/types/api";
+import type { Article, ArticleCategory, ArticleType } from "@/types/article";
 
 export const metadata: Metadata = {
   title: "Articles & Insights",
@@ -14,37 +16,31 @@ export const metadata: Metadata = {
 export default async function ArticlesPage({
   searchParams,
 }: {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
     category?: string;
     articleType?: string;
     search?: string;
-  };
+  }>;
 }) {
-  const page = Number(searchParams.page) || 1;
-  const category = searchParams.category || undefined;
-  const articleType = searchParams.articleType || undefined;
-  const search = searchParams.search || undefined;
+  const { page: pageParam, category, articleType, search } = await searchParams;
+  const page = Number(pageParam) || 1;
 
-  let data:
-    | import("@/types/api").PaginatedData<import("@/types/article").Article>
-    | undefined;
+  let data: PaginatedData<Article> | undefined;
   try {
     data = await getArticles({
       page,
       category,
       limit: 12,
       // type cast to keep strict typing in page
-      articleType: articleType as
-        | import("@/types/article").ArticleType
-        | undefined,
+      articleType: articleType as ArticleType | undefined,
       search,
     });
   } catch (error) {
     console.error("Failed to fetch articles", error);
   }
 
-  let categories: import("@/types/article").ArticleCategory[] = [];
+  let categories: ArticleCategory[] = [];
   try {
     categories = await getCategories();
   } catch (error) {

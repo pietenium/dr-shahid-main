@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SearchResults } from "@/components/search/SearchResults";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
 import { searchContent } from "@/lib/api/search";
+import { useSearchStore } from "@/store/use-search-store";
 import type { SearchType } from "@/types/search";
 
 const TYPE_TABS: Array<{ label: string; value: SearchType | "all" }> = [
@@ -20,7 +21,14 @@ const TYPE_TABS: Array<{ label: string; value: SearchType | "all" }> = [
 
 export function SearchClient() {
   const [query, setQuery] = useState("");
-  const [type, setType] = useState<SearchType | "all">("all");
+  const {
+    activeType: type,
+    setActiveType: setType,
+    addRecentSearch,
+    recentSearches,
+    clearRecentSearches,
+  } = useSearchStore();
+  const [focused, setFocused] = useState(false);
   const debounced = useDebounce(query.trim(), 400);
 
   const queryKey = useMemo(
@@ -39,6 +47,12 @@ export function SearchClient() {
       }),
   });
 
+  useEffect(() => {
+    if (debounced.length >= 2 && data) {
+      addRecentSearch(debounced, type);
+    }
+  }, [debounced, data, type, addRecentSearch]);
+
   return (
     <div className="container mx-auto px-6 py-12">
       <SectionHeading
@@ -53,6 +67,8 @@ export function SearchClient() {
           placeholder="Type at least 2 characters…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           autoFocus
         />
 
@@ -79,10 +95,56 @@ export function SearchClient() {
         </div>
 
         {debounced.length < 2 ? (
-          <EmptyState
-            title="Start typing to search"
-            description="Try searching for a condition, procedure, or publication title."
-          />
+          focused && query.trim().length === 0 && recentSearches.length ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-text-para-light dark:text-text-para-dark">
+                    Recent searches
+                  </h3>
+                  <p className="text-xs text-text-para-light dark:text-text-para-dark opacity-70">
+                    Tap a previous search to try again.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={clearRecentSearches}
+                  className="text-xs font-semibold text-brand-primary hover:text-brand-hover"
+                >
+                  Clear
+                </button>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {recentSearches.map((item) => (
+                  <button
+                    key={`${item.query}-${item.type}-${item.timestamp}`}
+                    type="button"
+                    onClick={() => {
+                      setType(item.type);
+                      setQuery(item.query);
+                    }}
+                    className="rounded-2xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark px-4 py-3 text-left text-sm text-text-heading-light dark:text-text-heading-dark hover:border-brand-primary transition"
+                  >
+                    <span className="font-semibold">{item.query}</span>
+                    <div className="text-[11px] text-text-para-light dark:text-text-para-dark opacity-80">
+                      {item.type === "all"
+                        ? "All"
+                        : item.type === "article"
+                          ? "Articles"
+                          : item.type === "research"
+                            ? "Research"
+                            : "Testimonials"}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <EmptyState
+              title="Start typing to search"
+              description="Try searching for a condition, procedure, or publication title."
+            />
+          )
         ) : isFetching ? (
           <div className="space-y-4">
             <Skeleton variant="text" className="h-5 w-40" />

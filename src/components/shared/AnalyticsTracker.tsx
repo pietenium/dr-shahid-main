@@ -19,11 +19,17 @@ export const AnalyticsTracker = () => {
       visitorIdRef.current = vid;
     }
 
+    let sessionId = sessionStorage.getItem("s_id");
+    if (!sessionId) {
+      sessionId = `sess_${Date.now()}`;
+      sessionStorage.setItem("s_id", sessionId);
+    }
+
     const track = async () => {
       try {
         await trackPageView({
           page: pathname,
-          sessionId: `sess_${Date.now()}`,
+          sessionId,
           visitorId: visitorIdRef.current || undefined,
           referrer: document.referrer || undefined,
         });

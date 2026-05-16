@@ -30,9 +30,6 @@ export function ArticleFilters({
   onArticleTypeChange: (v: ArticleType | "") => void;
   onClearAll: () => void;
 }) {
-  const activeIdx = TYPE_TABS.findIndex((t) => t.value === articleType);
-  const tabIdx = activeIdx === -1 ? 0 : activeIdx;
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
@@ -62,15 +59,6 @@ export function ArticleFilters({
       </div>
 
       <div className="relative inline-flex rounded-full border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-1">
-        <motion.div
-          layoutId="articleTypeTab"
-          className="absolute top-1 bottom-1 rounded-full bg-brand-primary"
-          style={{
-            left: `calc(${tabIdx} * 33.333% + 0.25rem)`,
-            width: "calc(33.333% - 0.5rem)",
-          }}
-          transition={{ type: "spring", stiffness: 420, damping: 35 }}
-        />
         {TYPE_TABS.map((t) => {
           const active = t.value === articleType;
           return (
@@ -79,14 +67,21 @@ export function ArticleFilters({
               type="button"
               onClick={() => onArticleTypeChange(t.value)}
               className={[
-                "relative z-10 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-colors",
+                "relative px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-colors",
                 active
                   ? "text-white"
                   : "text-text-para-light dark:text-text-para-dark",
               ].join(" ")}
               aria-pressed={active}
             >
-              {t.label}
+              {active && (
+                <motion.div
+                  layoutId="articleTypeTab"
+                  className="absolute inset-0 rounded-full bg-brand-primary"
+                  transition={{ type: "spring", stiffness: 420, damping: 35 }}
+                />
+              )}
+              <span className="relative z-10">{t.label}</span>
             </button>
           );
         })}

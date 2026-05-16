@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ArticleCard } from "@/components/articles/ArticleCard";
 import { ArticleFilters } from "@/components/articles/ArticleFilters";
@@ -11,6 +11,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
 import { fetchArticlesClient } from "@/lib/api/articles";
+import { useSetParams } from "@/lib/url";
 import { cn } from "@/lib/utils";
 import type { PaginatedData } from "@/types/api";
 import type { Article, ArticleCategory, ArticleType } from "@/types/article";
@@ -22,9 +23,8 @@ export function ArticlesClient({
   initialArticles?: PaginatedData<Article>;
   categories: ArticleCategory[];
 }) {
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const setParams = useSetParams();
 
   const page = Number(searchParams.get("page") || "1") || 1;
   const category = searchParams.get("category") || "";
@@ -60,18 +60,8 @@ export function ArticlesClient({
       !category && !articleType && !search && page === 1
         ? initialArticles
         : undefined,
-    staleTime: 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
-
-  const setParams = (next: Record<string, string | undefined>) => {
-    const params = new URLSearchParams(searchParams.toString());
-    for (const [k, v] of Object.entries(next)) {
-      if (!v) params.delete(k);
-      else params.set(k, v);
-    }
-    const qs = params.toString();
-    router.push(qs ? `${pathname}?${qs}` : pathname);
-  };
 
   const activePills = [
     category ? { key: "category", label: `Category: ${category}` } : null,
@@ -151,7 +141,7 @@ export function ArticlesClient({
             <Skeleton key={i} variant="card" className="h-80" />
           ))}
         </div>
-      ) : !data || data.docs.length === 0 ? (
+      ) : !data?.docs || data.docs.length === 0 ? (
         <EmptyState
           title="No Articles Found"
           description="Try adjusting your filters or search query."

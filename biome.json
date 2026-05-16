@@ -12,12 +12,22 @@
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
-    "indentWidth": 2
+    "indentWidth": 2,
+    "formatWithErrors": true
+  },
+  "css": {
+    "parser": {
+      "cssModules": true
+    }
   },
   "linter": {
     "enabled": true,
     "rules": {
       "recommended": true,
+      "a11y": {
+        "noStaticElementInteractions": "warn",
+        "useSemanticElements": "warn"
+      },
       "suspicious": {
         "noUnknownAtRules": "off"
       },
@@ -29,7 +39,11 @@
         "noUnusedVariables": {
           "level": "error",
           "fix": "safe"
-        }
+        },
+        "useExhaustiveDependencies": "warn"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "warn"
       }
     },
     "domains": {

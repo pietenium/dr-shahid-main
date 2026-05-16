@@ -12,7 +12,7 @@ export const About = () => {
         {/* Visual Column */}
         <div className="relative group">
           <div className="absolute inset-0 bg-brand-primary rounded-2xl rotate-3 group-hover:rotate-6 transition-transform duration-500 -z-10 opacity-10" />
-          <div className="relative aspect-[4/5] bg-gray-200 dark:bg-gray-800 rounded-2xl overflow-hidden shadow-2xl">
+          <div className="relative aspect-4/5 bg-gray-200 dark:bg-gray-800 rounded-2xl overflow-hidden shadow-2xl">
             <div className="absolute inset-0 flex items-center justify-center text-text-para-light dark:text-text-para-dark font-bold text-xl opacity-30">
               DR. SAHIDUR RAHMAN KHAN
             </div>

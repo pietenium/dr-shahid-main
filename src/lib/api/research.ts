@@ -19,16 +19,37 @@ export async function getResearchList(
 }
 
 export async function getResearchBySlug(slug: string): Promise<Research> {
-  return serverFetch<Research>(`/research/slug/${slug}`, {
+  return serverFetch<Research>(`/research/${slug}`, {
     revalidate: 600,
     tags: ["research", slug],
   });
 }
 
-export async function fetchResearchClient(params: ResearchFilterParams) {
-  const { data } = await api.get<ApiResponse<PaginatedData<Research>>>(
+export async function fetchResearchClient(
+  params: ResearchFilterParams,
+): Promise<PaginatedData<Research>> {
+  const { data: response } = await api.get<ApiResponse<Research[]>>(
     "/research",
     { params },
   );
-  return data.data;
+
+  const { data, meta } = response;
+
+  if (meta) {
+    return {
+      docs: data,
+      totalDocs: meta.total,
+      limit: meta.limit,
+      totalPages: meta.totalPage,
+      page: meta.page,
+    };
+  }
+
+  return {
+    docs: data || [],
+    totalDocs: 0,
+    limit: 10,
+    totalPages: 0,
+    page: 1,
+  };
 }

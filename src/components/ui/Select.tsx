@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
-  options: Array<{ value: string | number; label: string }>;
+  options: Array<{ value: string | number; label: string; disabled?: boolean }>;
   placeholder?: string;
 }
 
@@ -24,14 +24,14 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             {label}
           </label>
         )}
-        <div className="relative">
+        <div className="relative group focus-within:-translate-y-px transition-transform duration-200">
           <select
             ref={ref}
             id={inputId}
             className={cn(
               "w-full rounded-lg border bg-card-light dark:bg-card-dark px-3 py-2 text-sm transition-all outline-none appearance-none cursor-pointer",
               "border-border-light dark:border-border-dark",
-              "focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10",
+              "focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none",
               error &&
                 "border-red-500 focus:border-red-500 focus:ring-red-500/10",
               className,
@@ -44,7 +44,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
               </option>
             )}
             {options.map((opt) => (
-              <option key={opt.value} value={opt.value}>
+              <option key={opt.value} value={opt.value} disabled={opt.disabled}>
                 {opt.label}
               </option>
             ))}

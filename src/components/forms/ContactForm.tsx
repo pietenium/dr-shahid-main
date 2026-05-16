@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { submitContact } from "@/lib/api/contact";
+import { extractHttpStatus } from "@/lib/utils";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").trim(),
@@ -24,7 +25,6 @@ const contactSchema = z.object({
 type ContactFormData = z.infer<typeof contactSchema>;
 
 export const ContactForm = () => {
-  const [loading, setLoading] = useState(false);
   const { executeRecaptcha } = useGoogleReCaptcha();
 
   const {
@@ -37,35 +37,41 @@ export const ContactForm = () => {
     defaultValues: { reason: "general" },
   });
 
-  const onSubmit = async (data: ContactFormData) => {
-    if (!executeRecaptcha) {
-      toast.error("ReCAPTCHA not initialized. Please try again.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const token = await executeRecaptcha("contact_form");
-      await submitContact({ ...data, recaptchaToken: token });
+  const contactMutation = useMutation({
+    mutationFn: submitContact,
+    retry: false,
+    onSuccess: () => {
       toast.success("Message sent successfully! I'll get back to you soon.");
       reset();
-    } catch (error) {
-      const status =
-        typeof error === "object" &&
-        error &&
-        "response" in error &&
-        typeof (error as { response?: { status?: unknown } }).response
-          ?.status === "number"
-          ? (error as { response: { status: number } }).response.status
-          : undefined;
+    },
+    onError: (error) => {
+      const status = extractHttpStatus(error);
       if (status === 429) {
         toast.error("Too many messages. Please wait and try again.");
       } else {
         toast.error("Failed to send message. Please try again later.");
       }
-    } finally {
-      setLoading(false);
+    },
+  });
+
+  const onSubmit = async (data: ContactFormData) => {
+    let token: string | undefined;
+
+    if (executeRecaptcha) {
+      try {
+        token = await executeRecaptcha("contact_form");
+      } catch (_error) {
+        console.warn(
+          "ReCAPTCHA execution failed — attempting submission without token.",
+        );
+      }
+    } else {
+      console.warn(
+        "ReCAPTCHA not initialized — attempting submission without token.",
+      );
     }
+
+    contactMutation.mutate({ ...data, recaptchaToken: token });
   };
 
   return (
@@ -118,11 +124,33 @@ export const ContactForm = () => {
         maxLength={1000}
         {...register("message")}
       />
-      <Button type="submit" loading={loading} className="w-full h-14 text-lg">
+      <Button
+        type="submit"
+        loading={contactMutation.isPending}
+        className="w-full h-14 text-lg"
+      >
         Send Message
       </Button>
-      <p className="text-[10px] text-center text-text-para-light dark:text-text-para-dark opacity-40 uppercase tracking-widest">
-        Protected by reCAPTCHA v3
+      <p className="text-[10px] text-center text-text-para-light dark:text-text-para-dark opacity-50 leading-relaxed">
+        This site is protected by reCAPTCHA and the Google{" "}
+        <a
+          href="https://policies.google.com/privacy"
+          target="_blank"
+          rel="noreferrer"
+          className="underline hover:text-brand-primary transition-colors"
+        >
+          Privacy Policy
+        </a>{" "}
+        and{" "}
+        <a
+          href="https://policies.google.com/terms"
+          target="_blank"
+          rel="noreferrer"
+          className="underline hover:text-brand-primary transition-colors"
+        >
+          Terms of Service
+        </a>{" "}
+        apply.
       </p>
     </form>
   );

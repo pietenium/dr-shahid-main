@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
 import { AppointmentForm } from "@/components/forms/AppointmentForm";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { SectionHeading } from "@/components/shared/SectionHeading";
+import { FALLBACKS } from "@/constants/fallbacks";
 
 export const metadata: Metadata = {
   title: "Book an Appointment",
-  description:
-    "Schedule a consultation with Dr. Sahidur Rahman Khan for specialized orthopedic surgery and care.",
+  description: `Schedule a consultation with ${FALLBACKS.doctorName} for specialized orthopedic surgery and care.`,
 };
 
 export default function AppointmentPage() {
   return (
     <div className="container mx-auto px-6 py-12">
       <div className="max-w-4xl mx-auto">
+        <Breadcrumbs title="Book Appointment" />
         <SectionHeading
           badge="Priority Care"
           title="Schedule Your Consultation"
@@ -69,10 +71,10 @@ export default function AppointmentPage() {
                   Emergency Line
                 </p>
                 <a
-                  href="tel:+880123456789"
+                  href={`tel:${FALLBACKS.phone.replace(/\D/g, "")}`}
                   className="text-xl font-bold hover:text-white/80 transition-colors"
                 >
-                  +880 1234-56789
+                  {FALLBACKS.phone}
                 </a>
               </div>
             </div>
