@@ -577,7 +577,7 @@ export function SkeletonViewer({
         controls.update();
 
         setInfo({ phase: "ready", pct: 100, bone: null, error: null });
-        console.log("[SkeletonViewer] Model loaded — meshes:", meshes.length);
+        // Model loaded
       },
       ({ loaded, total }: { loaded: number; total?: number }) => {
         if (!alive) return;
@@ -635,7 +635,7 @@ export function SkeletonViewer({
         applyHighlight(hit);
         currentState.selected = hit;
         const name = hit.name || hit.parent?.name || "unnamed";
-        console.log("[SkeletonViewer] Selected:", name);
+        // Selected bone
         setInfo((p) => ({ ...p, bone: name }));
 
         // Temporarily disable auto-rotate on selection
@@ -696,12 +696,12 @@ export function SkeletonViewer({
       renderer.dispose();
       try {
         renderer.forceContextLoss();
-      } catch (_) {
-        console.log(_);
+      } catch (_error) {
+        // Ignore context loss errors during cleanup
       }
       canvas.remove();
     };
-  }, [showDebug]);
+  }, [showDebug, theme]);
 
   // ─── JSX ──────────────────────────────────────────────────────────────────
   const ready = info.phase === "ready";

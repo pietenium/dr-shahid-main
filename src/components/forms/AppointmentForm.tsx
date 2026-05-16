@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useForm } from "react-hook-form";
@@ -39,6 +39,7 @@ type AppointmentFormData = z.infer<typeof appointmentSchema>;
 
 export const AppointmentForm = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [step, setStep] = useState(0);
   const { executeRecaptcha } = useGoogleReCaptcha();
   const { message: prefillMessage, clearPrefill } = useAppointmentPrefill();
   const tomorrow = new Date();
@@ -50,6 +51,7 @@ export const AppointmentForm = () => {
     handleSubmit,
     reset,
     watch,
+    trigger,
     formState: { errors },
   } = useForm<AppointmentFormData>({
     resolver: zodResolver(appointmentSchema),
@@ -64,8 +66,22 @@ export const AppointmentForm = () => {
   }, [clearPrefill]);
 
   const preferredDate = watch("preferredDate");
-  const preferredTime = watch("preferredTime");
-  const currentStep = preferredDate ? (preferredTime ? 2 : 1) : 0;
+
+  const handleNext = async () => {
+    const fields =
+      step === 0
+        ? (["name", "email", "phone"] as const)
+        : (["preferredDate", "preferredTime"] as const);
+
+    const isValid = await trigger(fields);
+    if (isValid) {
+      setStep((s) => s + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setStep((s) => s - 1);
+  };
 
   const { data: bookedSlots = [] } = useQuery({
     queryKey: ["booked-slots", preferredDate],
@@ -83,6 +99,7 @@ export const AppointmentForm = () => {
         "Appointment request submitted! We will contact you soon to confirm.",
       );
       reset({ preferredTime: "", message: "" });
+      setStep(0);
       setSubmitted(true);
     },
     onError: (error) => {
@@ -98,6 +115,12 @@ export const AppointmentForm = () => {
   });
 
   const onSubmit = async (data: AppointmentFormData) => {
+    // Submission Guard: If not on the last step, just move to next step
+    if (step < 2) {
+      handleNext();
+      return;
+    }
+
     let token: string | undefined;
 
     if (executeRecaptcha) {
@@ -127,12 +150,12 @@ export const AppointmentForm = () => {
 
   if (submitted) {
     return (
-      <div className="space-y-8 text-center">
+      <div className="min-h-[400px] flex flex-col items-center justify-center space-y-8 text-center p-8">
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
+          initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 320, damping: 22 }}
-          className="mx-auto w-24 h-24 rounded-full bg-brand-primary/10 flex items-center justify-center"
+          transition={{ type: "spring", stiffness: 260, damping: 20 }}
+          className="w-24 h-24 rounded-full bg-brand-primary/10 flex items-center justify-center"
         >
           <svg
             width="44"
@@ -151,219 +174,352 @@ export const AppointmentForm = () => {
         </motion.div>
 
         <div className="space-y-3">
-          <h3 className="text-2xl font-bold text-text-heading-light dark:text-text-heading-dark">
-            Appointment request submitted
+          <h3 className="text-3xl font-bold text-text-heading-light dark:text-text-heading-dark">
+            Request Received
           </h3>
-          <p className="text-text-para-light dark:text-text-para-dark leading-relaxed">
-            Your request has been received. You’ll be contacted soon to confirm
-            the schedule.
+          <p className="text-text-para-light dark:text-text-para-dark max-w-sm mx-auto leading-relaxed">
+            Thank you for reaching out. We’ve received your request and our team
+            will contact you shortly to finalize your appointment.
           </p>
         </div>
 
         <Button
           type="button"
           onClick={() => setSubmitted(false)}
-          className="w-full h-14 text-lg"
+          variant="outline"
+          className="px-8 h-12"
         >
-          Book Another
+          Book Another Appointment
         </Button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="flex flex-col gap-3 mb-6">
-        <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] font-bold text-text-para-light dark:text-text-para-dark">
-          {["Personal Info", "Date & Time", "Additional Notes"].map(
-            (label, index) => {
-              const step = index;
-              const isActive = step <= currentStep;
-              return (
-                <div key={label} className="flex items-center gap-3">
-                  <div
-                    className={
-                      "flex h-8 w-8 items-center justify-center rounded-full border text-[10px] font-semibold " +
-                      (isActive
-                        ? "border-brand-primary bg-brand-primary text-white"
-                        : "border-border-light bg-transparent text-text-para-light dark:text-text-para-dark")
-                    }
-                  >
-                    {step + 1}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
+      <div className="flex flex-col gap-4 mb-2">
+        <div className="flex items-center justify-between gap-4">
+          {["Personal Info", "Date & Time", "Notes"].map((label, index) => {
+            const isActive = index <= step;
+            const isCurrent = index === step;
+            return (
+              <div key={label} className="flex-1 group">
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 text-xs font-bold transition-all duration-500 " +
+                        (isActive
+                          ? "border-brand-primary bg-brand-primary text-white shadow-xl shadow-brand-primary/20"
+                          : "border-border-light dark:border-border-dark bg-transparent text-text-para-light dark:text-text-para-dark") +
+                        (isCurrent
+                          ? " scale-110 ring-8 ring-brand-primary/10"
+                          : "")
+                      }
+                    >
+                      {index + 1}
+                    </div>
+                    <div className="flex-1 hidden md:block">
+                      <div
+                        className={
+                          "h-0.5 w-full rounded-full transition-all duration-700 " +
+                          (isActive
+                            ? "bg-brand-primary"
+                            : "bg-border-light dark:bg-border-dark")
+                        }
+                      />
+                    </div>
                   </div>
                   <span
                     className={
-                      "text-xs " +
+                      "text-[10px] font-bold uppercase tracking-[0.15em] transition-colors duration-500 " +
                       (isActive
-                        ? "text-text-heading-light dark:text-text-heading-dark"
-                        : "text-text-para-light dark:text-text-para-dark")
+                        ? "text-brand-primary"
+                        : "text-text-para-light dark:text-text-para-dark opacity-40")
                     }
                   >
                     {label}
                   </span>
-                  {step < 2 ? (
-                    <span className="h-px w-10 bg-border-light dark:bg-border-dark" />
-                  ) : null}
                 </div>
-              );
-            },
-          )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Input
-          label="Patient Name"
-          placeholder="John Doe"
-          error={errors.name?.message}
-          {...register("name")}
-        />
-        <Input
-          label="Email Address"
-          type="email"
-          placeholder="john@example.com"
-          error={errors.email?.message}
-          {...register("email")}
-        />
+      <div className="min-h-[400px] flex flex-col">
+        <AnimatePresence mode="wait">
+          {step === 0 && (
+            <motion.div
+              key="step0"
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -20, opacity: 0 }}
+              transition={{
+                type: "spring",
+                stiffness: 260,
+                damping: 25,
+              }}
+              className="space-y-8 flex-1 flex flex-col justify-center"
+            >
+              <div className="space-y-2">
+                <h4 className="text-xl font-bold text-text-heading-light dark:text-text-heading-dark">
+                  Who is the patient?
+                </h4>
+                <p className="text-sm text-text-para-light dark:text-text-para-dark opacity-60">
+                  Please provide the basic details so we can reach out to you.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <Input
+                  label="Patient Name"
+                  placeholder="John Doe"
+                  error={errors.name?.message}
+                  {...register("name")}
+                />
+                <Input
+                  label="Email Address"
+                  type="email"
+                  placeholder="john@example.com"
+                  error={errors.email?.message}
+                  {...register("email")}
+                />
+              </div>
+              <Input
+                label="Phone Number"
+                type="tel"
+                placeholder="+8801XXXXXXXXX"
+                helperText="Format: +8801XXXXXXXXX"
+                error={errors.phone?.message}
+                {...register("phone")}
+              />
+            </motion.div>
+          )}
+
+          {step === 1 && (
+            <motion.div
+              key="step1"
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -20, opacity: 0 }}
+              transition={{
+                type: "spring",
+                stiffness: 260,
+                damping: 25,
+              }}
+              className="space-y-8 flex-1 flex flex-col justify-center"
+            >
+              <div className="space-y-2">
+                <h4 className="text-xl font-bold text-text-heading-light dark:text-text-heading-dark">
+                  Preferred Schedule
+                </h4>
+                <p className="text-sm text-text-para-light dark:text-text-para-dark opacity-60">
+                  Select a date and time that fits your schedule best.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <Input
+                  label="Preferred Date"
+                  type="date"
+                  min={minDate}
+                  error={errors.preferredDate?.message}
+                  {...register("preferredDate")}
+                />
+                <Select
+                  label="Preferred Time Slot"
+                  options={[
+                    {
+                      value: "10:00 AM",
+                      label: `10:00 AM${bookedSlots.includes("10:00 AM") ? " (Booked)" : ""}`,
+                      disabled: bookedSlots.includes("10:00 AM"),
+                    },
+                    {
+                      value: "10:30 AM",
+                      label: `10:30 AM${bookedSlots.includes("10:30 AM") ? " (Booked)" : ""}`,
+                      disabled: bookedSlots.includes("10:30 AM"),
+                    },
+                    {
+                      value: "11:00 AM",
+                      label: `11:00 AM${bookedSlots.includes("11:00 AM") ? " (Booked)" : ""}`,
+                      disabled: bookedSlots.includes("11:00 AM"),
+                    },
+                    {
+                      value: "11:30 AM",
+                      label: `11:30 AM${bookedSlots.includes("11:30 AM") ? " (Booked)" : ""}`,
+                      disabled: bookedSlots.includes("11:30 AM"),
+                    },
+                    {
+                      value: "12:00 PM",
+                      label: `12:00 PM${bookedSlots.includes("12:00 PM") ? " (Booked)" : ""}`,
+                      disabled: bookedSlots.includes("12:00 PM"),
+                    },
+                    {
+                      value: "04:00 PM",
+                      label: `04:00 PM${bookedSlots.includes("04:00 PM") ? " (Booked)" : ""}`,
+                      disabled: bookedSlots.includes("04:00 PM"),
+                    },
+                    {
+                      value: "04:30 PM",
+                      label: `04:30 PM${bookedSlots.includes("04:30 PM") ? " (Booked)" : ""}`,
+                      disabled: bookedSlots.includes("04:30 PM"),
+                    },
+                    {
+                      value: "05:00 PM",
+                      label: `05:00 PM${bookedSlots.includes("05:00 PM") ? " (Booked)" : ""}`,
+                      disabled: bookedSlots.includes("05:00 PM"),
+                    },
+                    {
+                      value: "05:30 PM",
+                      label: `05:30 PM${bookedSlots.includes("05:30 PM") ? " (Booked)" : ""}`,
+                      disabled: bookedSlots.includes("05:30 PM"),
+                    },
+                    {
+                      value: "06:00 PM",
+                      label: `06:00 PM${bookedSlots.includes("06:00 PM") ? " (Booked)" : ""}`,
+                      disabled: bookedSlots.includes("06:00 PM"),
+                    },
+                    {
+                      value: "06:30 PM",
+                      label: `06:30 PM${bookedSlots.includes("06:30 PM") ? " (Booked)" : ""}`,
+                      disabled: bookedSlots.includes("06:30 PM"),
+                    },
+                    {
+                      value: "07:00 PM",
+                      label: `07:00 PM${bookedSlots.includes("07:00 PM") ? " (Booked)" : ""}`,
+                      disabled: bookedSlots.includes("07:00 PM"),
+                    },
+                    {
+                      value: "07:30 PM",
+                      label: `07:30 PM${bookedSlots.includes("07:30 PM") ? " (Booked)" : ""}`,
+                      disabled: bookedSlots.includes("07:30 PM"),
+                    },
+                    {
+                      value: "08:00 PM",
+                      label: `08:00 PM${bookedSlots.includes("08:00 PM") ? " (Booked)" : ""}`,
+                      disabled: bookedSlots.includes("08:00 PM"),
+                    },
+                  ]}
+                  error={errors.preferredTime?.message}
+                  {...register("preferredTime")}
+                />
+              </div>
+              {bookedSlots.length > 0 ? (
+                <div className="flex items-center gap-2 text-xs text-brand-primary bg-brand-primary/5 p-4 rounded-xl border border-brand-primary/10">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <title>Info Icon</title>
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                  </svg>
+                  <span>
+                    {bookedSlots.length} slot(s) already booked for this date.
+                    Please pick an available one.
+                  </span>
+                </div>
+              ) : null}
+            </motion.div>
+          )}
+
+          {step === 2 && (
+            <motion.div
+              key="step2"
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -20, opacity: 0 }}
+              transition={{
+                type: "spring",
+                stiffness: 260,
+                damping: 25,
+              }}
+              className="space-y-8 flex-1 flex flex-col justify-center"
+            >
+              <div className="space-y-2">
+                <h4 className="text-xl font-bold text-text-heading-light dark:text-text-heading-dark">
+                  Anything else?
+                </h4>
+                <p className="text-sm text-text-para-light dark:text-text-para-dark opacity-60">
+                  (Optional) Help us understand your concerns before the visit.
+                </p>
+              </div>
+              <Textarea
+                label="Message"
+                placeholder="Briefly describe your orthopedic concern..."
+                error={errors.message?.message}
+                maxLength={500}
+                className="min-h-[160px]"
+                {...register("message")}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Input
-          label="Phone Number"
-          type="tel"
-          placeholder="+8801XXXXXXXXX"
-          helperText="Format: +8801XXXXXXXXX"
-          error={errors.phone?.message}
-          {...register("phone")}
-        />
-        <Input
-          label="Preferred Date"
-          type="date"
-          min={minDate}
-          error={errors.preferredDate?.message}
-          {...register("preferredDate")}
-        />
-      </div>
-      <Select
-        label="Preferred Time Slot"
-        options={[
-          {
-            value: "10:00 AM",
-            label: `10:00 AM${bookedSlots.includes("10:00 AM") ? " (Booked)" : ""}`,
-            disabled: bookedSlots.includes("10:00 AM"),
-          },
-          {
-            value: "10:30 AM",
-            label: `10:30 AM${bookedSlots.includes("10:30 AM") ? " (Booked)" : ""}`,
-            disabled: bookedSlots.includes("10:30 AM"),
-          },
-          {
-            value: "11:00 AM",
-            label: `11:00 AM${bookedSlots.includes("11:00 AM") ? " (Booked)" : ""}`,
-            disabled: bookedSlots.includes("11:00 AM"),
-          },
-          {
-            value: "11:30 AM",
-            label: `11:30 AM${bookedSlots.includes("11:30 AM") ? " (Booked)" : ""}`,
-            disabled: bookedSlots.includes("11:30 AM"),
-          },
-          {
-            value: "12:00 PM",
-            label: `12:00 PM${bookedSlots.includes("12:00 PM") ? " (Booked)" : ""}`,
-            disabled: bookedSlots.includes("12:00 PM"),
-          },
-          {
-            value: "04:00 PM",
-            label: `04:00 PM${bookedSlots.includes("04:00 PM") ? " (Booked)" : ""}`,
-            disabled: bookedSlots.includes("04:00 PM"),
-          },
-          {
-            value: "04:30 PM",
-            label: `04:30 PM${bookedSlots.includes("04:30 PM") ? " (Booked)" : ""}`,
-            disabled: bookedSlots.includes("04:30 PM"),
-          },
-          {
-            value: "05:00 PM",
-            label: `05:00 PM${bookedSlots.includes("05:00 PM") ? " (Booked)" : ""}`,
-            disabled: bookedSlots.includes("05:00 PM"),
-          },
-          {
-            value: "05:30 PM",
-            label: `05:30 PM${bookedSlots.includes("05:30 PM") ? " (Booked)" : ""}`,
-            disabled: bookedSlots.includes("05:30 PM"),
-          },
-          {
-            value: "06:00 PM",
-            label: `06:00 PM${bookedSlots.includes("06:00 PM") ? " (Booked)" : ""}`,
-            disabled: bookedSlots.includes("06:00 PM"),
-          },
-          {
-            value: "06:30 PM",
-            label: `06:30 PM${bookedSlots.includes("06:30 PM") ? " (Booked)" : ""}`,
-            disabled: bookedSlots.includes("06:30 PM"),
-          },
-          {
-            value: "07:00 PM",
-            label: `07:00 PM${bookedSlots.includes("07:00 PM") ? " (Booked)" : ""}`,
-            disabled: bookedSlots.includes("07:00 PM"),
-          },
-          {
-            value: "07:30 PM",
-            label: `07:30 PM${bookedSlots.includes("07:30 PM") ? " (Booked)" : ""}`,
-            disabled: bookedSlots.includes("07:30 PM"),
-          },
-          {
-            value: "08:00 PM",
-            label: `08:00 PM${bookedSlots.includes("08:00 PM") ? " (Booked)" : ""}`,
-            disabled: bookedSlots.includes("08:00 PM"),
-          },
-        ]}
-        error={errors.preferredTime?.message}
-        {...register("preferredTime")}
-      />
-      {bookedSlots.length > 0 ? (
-        <p className="text-xs text-text-para-light dark:text-text-para-dark opacity-60">
-          {bookedSlots.length} time slot(s) already booked for selected date.
+
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-8 border-t border-border-light dark:border-border-dark">
+        <p className="text-[10px] text-center sm:text-left text-text-para-light dark:text-text-para-dark opacity-50 leading-relaxed max-w-xs">
+          <span>A representative will contact you for final confirmation.</span>
+          <br />
+          <span>
+            Protected by reCAPTCHA. Google{" "}
+            <a
+              href="https://policies.google.com/privacy"
+              target="_blank"
+              rel="noreferrer"
+              className="underline hover:text-brand-primary"
+            >
+              Privacy
+            </a>{" "}
+            &{" "}
+            <a
+              href="https://policies.google.com/terms"
+              target="_blank"
+              rel="noreferrer"
+              className="underline hover:text-brand-primary"
+            >
+              Terms
+            </a>{" "}
+            apply.
+          </span>
         </p>
-      ) : null}
-      <Textarea
-        label="Message (optional)"
-        placeholder="Briefly describe your orthopedic concern..."
-        error={errors.message?.message}
-        maxLength={500}
-        {...register("message")}
-      />
-      <Button
-        type="submit"
-        loading={appointmentMutation.isPending}
-        className="w-full h-14 text-lg"
-      >
-        Submit Appointment Request
-      </Button>
-      <p className="text-[10px] text-center text-text-para-light dark:text-text-para-dark opacity-50 leading-relaxed space-y-1">
-        <span>A representative will contact you for final confirmation.</span>
-        <br />
-        <span>
-          This site is protected by reCAPTCHA and the Google{" "}
-          <a
-            href="https://policies.google.com/privacy"
-            target="_blank"
-            rel="noreferrer"
-            className="underline hover:text-brand-primary transition-colors"
-          >
-            Privacy Policy
-          </a>{" "}
-          and{" "}
-          <a
-            href="https://policies.google.com/terms"
-            target="_blank"
-            rel="noreferrer"
-            className="underline hover:text-brand-primary transition-colors"
-          >
-            Terms of Service
-          </a>{" "}
-          apply.
-        </span>
-      </p>
+
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          {step > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleBack}
+              className="flex-1 sm:flex-none h-12 px-8 text-base font-bold"
+            >
+              Back
+            </Button>
+          )}
+          {step < 2 ? (
+            <Button
+              type="button"
+              onClick={handleNext}
+              className="flex-[2] sm:flex-none h-12 px-10 text-base font-bold shadow-lg shadow-brand-primary/20"
+            >
+              Continue
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              loading={appointmentMutation.isPending}
+              className="flex-[2] sm:flex-none h-12 px-10 text-base font-bold shadow-lg shadow-brand-primary/20"
+            >
+              Submit Request
+            </Button>
+          )}
+        </div>
+      </div>
     </form>
   );
 };

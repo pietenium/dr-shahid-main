@@ -25,9 +25,20 @@ export function truncate(text: string, maxLength: number): string {
 
 /** Estimate reading time (minutes) from HTML content */
 export function readingTime(html: string): number {
-  const text = html.replace(/<[^>]*>/g, "");
+  const text = stripTags(html);
   const words = text.split(/\s+/).length;
   return Math.max(1, Math.ceil(words / 200));
+}
+
+/** Recursively strip HTML tags to prevent incomplete sanitization */
+export function stripTags(html: string): string {
+  let text = html;
+  let prev: string;
+  do {
+    prev = text;
+    text = text.replace(/<[^>]*>/g, "");
+  } while (text !== prev);
+  return text;
 }
 
 /** Get initials from a name */

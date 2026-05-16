@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { FALLBACKS } from "@/constants/fallbacks";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useTheme } from "@/providers/ThemeProvider";
 
 function useCountUp(target: number, duration = 2000) {
@@ -47,6 +48,7 @@ const SkeletonViewer = dynamic(
 
 export const Hero = () => {
   const { resolvedTheme } = useTheme();
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
   const { count: years, ref: yearsRef } = useCountUp(15);
   const { count: surgeries, ref: surgeriesRef } = useCountUp(5000, 2500);
 
@@ -150,56 +152,58 @@ export const Hero = () => {
         </motion.div>
 
         {/* ── Right: teal stage + dark 3D card ────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.25 }}
-          /**
-           * This column IS the teal panel.
-           * rounded-l-[80px] gives the signature left-rounded shape.
-           * p-8 gives equal 32px gap on every edge of the inner card.
-           * -mx-6 + pr-0 lets it bleed to the right viewport edge.
-           */
-          className="hidden lg:flex items-center justify-center bg-brand-softbg dark:bg-brand-primary/5 rounded-l-[80px] p-8 relative overflow-hidden"
-        >
-          {/* Dark 3D medical viewer card */}
-          <div className="relative w-full max-w-125 aspect-4/5 max-h-[80vh] rounded-4xl overflow-hidden bg-bg-light dark:bg-bg-dark shadow-[0_24px_80px_-12px_rgba(0,0,0,0.25),0_0_0_1px_rgba(47,160,132,0.15)] mx-auto">
-            <SkeletonViewer showDebug={false} theme={resolvedTheme} />
+        {isDesktop && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.25 }}
+            /**
+             * This column IS the teal panel.
+             * rounded-l-[80px] gives the signature left-rounded shape.
+             * p-8 gives equal 32px gap on every edge of the inner card.
+             * -mx-6 + pr-0 lets it bleed to the right viewport edge.
+             */
+            className="hidden lg:flex items-center justify-center bg-brand-softbg dark:bg-brand-primary/5 rounded-l-[80px] p-8 relative overflow-hidden"
+          >
+            {/* Dark 3D medical viewer card */}
+            <div className="relative w-full max-w-125 aspect-4/5 max-h-[80vh] rounded-4xl overflow-hidden bg-bg-light dark:bg-bg-dark shadow-[0_24px_80px_-12px_rgba(0,0,0,0.25),0_0_0_1px_rgba(47,160,132,0.15)] mx-auto">
+              <SkeletonViewer showDebug={false} theme={resolvedTheme} />
 
-            {/* Rotate & Explore pill — inside the card */}
-            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 px-5 py-2 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-white text-[10px] uppercase tracking-[0.2em] font-bold pointer-events-none whitespace-nowrap z-20">
-              <svg
-                width="11"
-                height="11"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-              Rotate &amp; Explore
-              <svg
-                width="11"
-                height="11"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M9 18l6-6-6-6" />
-              </svg>
+              {/* Rotate & Explore pill — inside the card */}
+              <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 px-5 py-2 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-white text-[10px] uppercase tracking-[0.2em] font-bold pointer-events-none whitespace-nowrap z-20">
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+                Rotate &amp; Explore
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </div>
             </div>
-          </div>
-          {/* Bottom gradient fade — blends panel into the next section */}
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-bg-light dark:from-bg-dark to-transparent pointer-events-none rounded-bl-[80px]" />
-        </motion.div>
+            {/* Bottom gradient fade — blends panel into the next section */}
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-linear-to-t from-bg-light dark:from-bg-dark to-transparent pointer-events-none rounded-bl-[80px]" />
+          </motion.div>
+        )}
       </div>
     </section>
   );

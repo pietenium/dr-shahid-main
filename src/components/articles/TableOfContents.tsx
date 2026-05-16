@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { useEffect, useMemo, useState } from "react";
+import { cn, stripTags } from "@/lib/utils";
 
 export const TableOfContents = ({ html }: { html: string }) => {
   const [activeId, setActiveId] = useState("");
-  const headings =
-    html.match(/<h([2-3])[^>]*id=["']([^"']*)["'][^>]*>(.*?)<\/h\1>/g) || [];
+  const headings = useMemo(
+    () =>
+      html.match(/<h([2-3])[^>]*id=["']([^"']*)["'][^>]*>(.*?)<\/h\1>/g) || [],
+    [html],
+  );
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -44,9 +47,14 @@ export const TableOfContents = ({ html }: { html: string }) => {
         </h4>
         <ul className="space-y-3">
           {headings.map((heading) => {
-            const level = heading.match(/<h([2-3])/)?.[1];
-            const id = heading.match(/id=["']([^"']*)["']/)?.[1] as string;
-            const text = heading.replace(/<[^>]*>/g, "").trim();
+            const match = heading.match(
+              /<h([2-3])[^>]*id=["']([^"']*)["'][^>]*>(.*?)<\/h\1>/,
+            );
+            if (!match) return null;
+
+            const level = match[1];
+            const id = match[2];
+            const text = stripTags(match[3]).trim();
 
             return (
               <li key={id}>
