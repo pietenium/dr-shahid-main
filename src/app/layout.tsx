@@ -69,6 +69,26 @@ export default async function RootLayout({
           rel="preconnect"
           href={process.env.NEXT_PUBLIC_PAYLOAD_URL || "http://127.0.0.1:5000"}
         />
+        <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: inline theme bootstrapping script is safe and required for FOUC prevention
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  if (
+                    theme === 'dark' ||
+                    (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+                  ) {
+                    document.documentElement.classList.add('dark');
+                  }
+                } catch (e) {
+                  // Ignore localStorage failures.
+                }
+              })();
+            `,
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col bg-bg-light dark:bg-bg-dark text-text-heading-light dark:text-text-heading-dark">
         <ThemeProvider>

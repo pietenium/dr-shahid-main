@@ -1,5 +1,6 @@
 "use client";
 
+import DOMPurify from "dompurify";
 import { cn } from "@/lib/utils";
 
 interface ArticleContentProps {
@@ -8,6 +9,44 @@ interface ArticleContentProps {
 }
 
 export const ArticleContent = ({ html, className }: ArticleContentProps) => {
+  const cleanHtml = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "h1",
+      "h2",
+      "h3",
+      "p",
+      "a",
+      "img",
+      "blockquote",
+      "pre",
+      "code",
+      "ul",
+      "ol",
+      "li",
+      "strong",
+      "em",
+      "table",
+      "thead",
+      "tbody",
+      "tr",
+      "td",
+      "th",
+      "br",
+      "hr",
+      "iframe",
+    ],
+    ALLOWED_ATTR: [
+      "href",
+      "src",
+      "alt",
+      "class",
+      "target",
+      "rel",
+      "frameborder",
+      "allowfullscreen",
+    ],
+  });
+
   return (
     <div
       className={cn(
@@ -19,8 +58,8 @@ export const ArticleContent = ({ html, className }: ArticleContentProps) => {
         "prose-strong:text-brand-primary dark:prose-strong:text-brand-accent",
         className,
       )}
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: sanitized HTML from backend
-      dangerouslySetInnerHTML={{ __html: html }}
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: user-supplied article HTML is sanitized via DOMPurify
+      dangerouslySetInnerHTML={{ __html: cleanHtml }}
     />
   );
 };
