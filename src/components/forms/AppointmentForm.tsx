@@ -85,25 +85,31 @@ export const AppointmentForm = () => {
   });
 
   const onSubmit = async (data: AppointmentFormData) => {
-    if (!executeRecaptcha) {
-      toast.error("ReCAPTCHA not initialized. Please try again.");
-      return;
+    let token: string | undefined;
+
+    if (executeRecaptcha) {
+      try {
+        token = await executeRecaptcha("appointment_request");
+      } catch (_error) {
+        console.warn(
+          "ReCAPTCHA execution failed — attempting submission without token.",
+        );
+      }
+    } else {
+      console.warn(
+        "ReCAPTCHA not initialized — attempting submission without token.",
+      );
     }
 
-    try {
-      const token = await executeRecaptcha("appointment_request");
-      appointmentMutation.mutate({
-        name: data.name,
-        phone: data.phone,
-        email: data.email || undefined,
-        message: data.message,
-        preferredDate: data.preferredDate,
-        preferredTime: data.preferredTime,
-        recaptchaToken: token,
-      });
-    } catch (_error) {
-      toast.error("Failed to execute ReCAPTCHA. Please try again.");
-    }
+    appointmentMutation.mutate({
+      name: data.name,
+      phone: data.phone,
+      email: data.email || undefined,
+      message: data.message,
+      preferredDate: data.preferredDate,
+      preferredTime: data.preferredTime,
+      recaptchaToken: token,
+    });
   };
 
   if (submitted) {

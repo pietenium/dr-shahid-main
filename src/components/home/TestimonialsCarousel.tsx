@@ -1,7 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { TestimonialCard } from "@/components/testimonials/TestimonialCard";
 import { Button } from "@/components/ui/Button";
@@ -27,7 +26,7 @@ export function TestimonialsCarousel({
     const clamped = Math.max(0, Math.min(idx, visible.length - 1));
     const child = el.children.item(clamped) as HTMLElement | null;
     if (!child) return;
-    
+
     el.scrollTo({
       left: child.offsetLeft - (el.clientWidth - child.clientWidth) / 2,
       behavior: "smooth",
@@ -66,7 +65,7 @@ export function TestimonialsCarousel({
     <section className="py-32 bg-[#F8FAFC] dark:bg-bg-dark relative overflow-hidden">
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-1/2 bg-linear-to-b from-brand-primary/5 to-transparent pointer-events-none" />
-      
+
       <div className="container mx-auto px-6 relative">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-12 mb-16">
           <SectionHeading
@@ -83,7 +82,18 @@ export function TestimonialsCarousel({
               disabled={active === 0}
               aria-label="Previous testimonial"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-label="Previous arrow"
+              >
+                <title>Previous</title>
                 <path d="M19 12H5M12 19l-7-7 7-7" />
               </svg>
             </button>
@@ -94,7 +104,18 @@ export function TestimonialsCarousel({
               disabled={active === visible.length - 1}
               aria-label="Next testimonial"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-label="Next arrow"
+              >
+                <title>Next</title>
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </button>
@@ -110,7 +131,7 @@ export function TestimonialsCarousel({
             {visible.map((t, idx) => (
               <div
                 key={t._id}
-                className="snap-center shrink-0 w-[85vw] md:w-[450px] lg:w-[480px]"
+                className="snap-center shrink-0 w-[85vw] md:w-112.5 lg:w-120"
               >
                 <TestimonialCard testimonial={t} idx={idx} />
               </div>
@@ -122,7 +143,7 @@ export function TestimonialsCarousel({
           <div className="flex items-center gap-3">
             {visible.map((_t, idx) => (
               <button
-                key={idx}
+                key={`indicator-${_t._id}`}
                 type="button"
                 aria-label={`Go to testimonial ${idx + 1}`}
                 onClick={() => scrollToIndex(idx)}

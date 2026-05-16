@@ -115,28 +115,14 @@ export const Hero = () => {
            * p-8 gives equal 32px gap on every edge of the inner card.
            * -mx-6 + pr-0 lets it bleed to the right viewport edge.
            */
-          className="hidden lg:flex items-center justify-center
-                     bg-brand-softbg dark:bg-brand-primary/5
-                     rounded-l-[80px]
-                     p-8
-                     -mr-6"
+          className="hidden lg:flex items-center justify-center bg-brand-softbg dark:bg-brand-primary/5 rounded-l-[80px] p-8 -mr-6"
         >
           {/* Dark 3D medical viewer card */}
-          <div
-            className="relative w-full max-w-125 aspect-4/5 max-h-[80vh] rounded-4xl overflow-hidden bg-bg-light dark:bg-bg-dark
-                          shadow-[0_24px_80px_-12px_rgba(0,0,0,0.25),0_0_0_1px_rgba(47,160,132,0.15)] mx-auto"
-          >
+          <div className="relative w-full max-w-125 aspect-4/5 max-h-[80vh] rounded-4xl overflow-hidden bg-bg-light dark:bg-bg-dark shadow-[0_24px_80px_-12px_rgba(0,0,0,0.25),0_0_0_1px_rgba(47,160,132,0.15)] mx-auto">
             <SkeletonViewer showDebug={false} />
 
             {/* Rotate & Explore pill — inside the card */}
-            <div
-              className="absolute bottom-5 left-1/2 -translate-x-1/2
-                            flex items-center gap-2 px-5 py-2
-                            bg-black/50 backdrop-blur-md rounded-full
-                            border border-white/10
-                            text-white text-[10px] uppercase tracking-[0.2em] font-bold
-                            pointer-events-none whitespace-nowrap z-20"
-            >
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 px-5 py-2 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-white text-[10px] uppercase tracking-[0.2em] font-bold pointer-events-none whitespace-nowrap z-20">
               <svg
                 width="11"
                 height="11"

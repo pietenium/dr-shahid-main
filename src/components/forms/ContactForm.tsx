@@ -55,17 +55,23 @@ export const ContactForm = () => {
   });
 
   const onSubmit = async (data: ContactFormData) => {
-    if (!executeRecaptcha) {
-      toast.error("ReCAPTCHA not initialized. Please try again.");
-      return;
+    let token: string | undefined;
+
+    if (executeRecaptcha) {
+      try {
+        token = await executeRecaptcha("contact_form");
+      } catch (_error) {
+        console.warn(
+          "ReCAPTCHA execution failed — attempting submission without token.",
+        );
+      }
+    } else {
+      console.warn(
+        "ReCAPTCHA not initialized — attempting submission without token.",
+      );
     }
 
-    try {
-      const token = await executeRecaptcha("contact_form");
-      contactMutation.mutate({ ...data, recaptchaToken: token });
-    } catch (_error) {
-      toast.error("Failed to execute ReCAPTCHA. Please try again.");
-    }
+    contactMutation.mutate({ ...data, recaptchaToken: token });
   };
 
   return (

@@ -3,8 +3,6 @@ import { SectionHeading } from "@/components/shared/SectionHeading";
 import { TestimonialCard } from "@/components/testimonials/TestimonialCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getTestimonials } from "@/lib/api/testimonials";
-import type { PaginatedData } from "@/types/api";
-import type { Testimonial } from "@/types/testimonial";
 
 export const metadata: Metadata = {
   title: "Patient Stories",
@@ -13,12 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function TestimonialsPage() {
-  let data: PaginatedData<Testimonial> | undefined;
-  try {
-    data = await getTestimonials();
-  } catch (error) {
-    console.error("Failed to fetch testimonials", error);
-  }
+  const data = await getTestimonials();
 
   return (
     <div className="container mx-auto px-6 py-20">
@@ -50,14 +43,26 @@ export default async function TestimonialsPage() {
           Share Your Journey
         </h3>
         <p className="text-lg text-text-para-light dark:text-text-para-dark mb-10 max-w-xl mx-auto leading-relaxed">
-          Your recovery story can inspire others facing similar orthopedic challenges. We would love to hear about your experience.
+          Your recovery story can inspire others facing similar orthopedic
+          challenges. We would love to hear about your experience.
         </p>
         <a
           href="mailto:testimonials@drshahidur.com"
           className="inline-flex items-center gap-3 px-10 py-5 bg-brand-primary text-white rounded-2xl font-bold uppercase tracking-widest hover:bg-brand-hover transition-all shadow-xl shadow-brand-primary/20"
         >
           <span>Email Your Feedback</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-label="Send email icon"
+          >
+            <title>Send Email</title>
             <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
           </svg>
         </a>

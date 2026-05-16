@@ -20,7 +20,7 @@ export const TestimonialCard = ({
   const [expanded, setExpanded] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
   const canExpand = testimonial.content.length > 250;
-  
+
   const displayText = useMemo(() => {
     if (expanded || !canExpand) return testimonial.content;
     return `${testimonial.content.slice(0, 250).trim()}…`;
@@ -32,7 +32,7 @@ export const TestimonialCard = ({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: idx * 0.1 }}
-      className="group bg-white dark:bg-card-dark rounded-[2rem] border border-border-light/50 dark:border-border-dark p-10 shadow-2xl shadow-brand-primary/5 relative flex flex-col h-full hover:border-brand-primary/30 transition-all duration-500"
+      className="group bg-white dark:bg-card-dark rounded-4xl border border-border-light/50 dark:border-border-dark p-10 shadow-2xl shadow-brand-primary/5 relative flex flex-col h-full hover:border-brand-primary/30 transition-all duration-500"
     >
       {/* Refined Quote Icon */}
       <div className="absolute top-10 right-10 text-brand-primary/10 group-hover:text-brand-primary/20 transition-colors duration-500">
@@ -59,7 +59,14 @@ export const TestimonialCard = ({
               aria-expanded={expanded}
             >
               {expanded ? "Show less" : "Read full story"}
-              <span className={cn("transition-transform", expanded ? "rotate-180" : "")}>↓</span>
+              <span
+                className={cn(
+                  "transition-transform",
+                  expanded ? "rotate-180" : "",
+                )}
+              >
+                ↓
+              </span>
             </button>
           )}
         </div>
@@ -67,7 +74,7 @@ export const TestimonialCard = ({
 
       <div className="mt-10 flex items-center gap-4 pt-8 border-t border-border-light/50 dark:border-border-dark">
         <div className="relative group/avatar">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden bg-brand-softbg dark:bg-brand-primary/10 flex items-center justify-center text-brand-primary text-xl font-black shadow-inner">
+          <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-brand-softbg dark:bg-brand-primary/10 flex items-center justify-center text-brand-primary text-xl font-black shadow-inner">
             {testimonial.image?.url ? (
               <Image
                 src={testimonial.image.url}
@@ -81,7 +88,7 @@ export const TestimonialCard = ({
               testimonial.name.charAt(0)
             )}
           </div>
-          
+
           {testimonial.video?.url && (
             <button
               type="button"
@@ -93,7 +100,7 @@ export const TestimonialCard = ({
             </button>
           )}
         </div>
-        
+
         <div className="flex flex-col">
           <span className="text-lg font-bold text-text-heading-light dark:text-text-heading-dark">
             {testimonial.name}
