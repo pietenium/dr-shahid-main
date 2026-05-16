@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { FALLBACKS } from "@/constants/fallbacks";
 import { NAV_LINKS } from "@/constants/navigation";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { cn } from "@/lib/utils";
@@ -60,10 +61,10 @@ export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
           </div>
           <div className="flex flex-col">
             <span className="font-bold text-lg leading-none text-text-heading-light dark:text-text-heading-dark">
-              {appInfo?.doctorName ?? "Dr. Sahidur Rahman Khan"}
+              {appInfo?.doctorName ?? FALLBACKS.doctorName}
             </span>
             <span className="text-[10px] uppercase tracking-widest text-brand-primary font-bold">
-              {appInfo?.doctorSpecialty ?? "Orthopedic Surgeon"}
+              {appInfo?.doctorSpecialty ?? FALLBACKS.specialty}
             </span>
           </div>
         </Link>

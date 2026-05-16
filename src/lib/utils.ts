@@ -1,9 +1,10 @@
 import { type ClassValue, clsx } from "clsx";
 import { format, formatDistanceToNow } from "date-fns";
+import { twMerge } from "tailwind-merge";
 
-/** Tailwind class merge helper (simplified — or install clsx + tailwind-merge) */
+/** Tailwind class merge helper */
 export function cn(...classes: ClassValue[]): string {
-  return clsx(classes);
+  return twMerge(clsx(classes));
 }
 
 /** Format ISO date string to human-readable */

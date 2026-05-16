@@ -19,6 +19,7 @@ import {
   HemisphereLight,
   Mesh,
   MeshStandardMaterial,
+  type Object3D,
   PCFShadowMap,
   PerspectiveCamera,
   PointLight,
@@ -27,6 +28,7 @@ import {
   Raycaster,
   Scene,
   SRGBColorSpace,
+  type Texture,
   TorusGeometry,
   Vector2,
   Vector3,
@@ -34,15 +36,43 @@ import {
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import {
+  type GLTF,
+  GLTFLoader,
+} from "three/examples/jsm/loaders/GLTFLoader.js";
+import styles from "./SkeletonViewer.module.css";
 
 // ─── Brand palette (matches the portfolio's teal #2fa084) ─────────────────────
 const TEAL = new Color(0x2fa084); // brand-primary
 // const TEAL_DARK  = new Color(0x1a6b58); // darker teal for secondary accents
 const TEAL_LIGHT = new Color(0x3fcba0); // lighter teal for highlights
 
+type SkeletonViewerProps = {
+  showDebug?: boolean;
+};
+
+type ViewerInfo = {
+  phase: "loading" | "ready" | "error";
+  pct: number;
+  bone: string | null;
+  error: string | null;
+};
+
+type ViewerState = {
+  scene: Scene;
+  camera: PerspectiveCamera;
+  renderer: WebGLRenderer;
+  controls: OrbitControls;
+  meshes: Mesh[];
+  selected: Mesh | null;
+  gridGroup: Group;
+};
+
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : String(error);
+
 // ─── Pure helpers (no React) ──────────────────────────────────────────────────
-function createScene() {
+function createScene(): Scene {
   const scene = new Scene();
   // Solid dark-teal background — works in both light & dark mode
   scene.background = new Color(0x060f0c);
@@ -50,14 +80,18 @@ function createScene() {
   return scene;
 }
 
-function createCamera(w, h) {
+function createCamera(w: number, h: number): PerspectiveCamera {
   // 26° vertical FOV — tight enough that skeleton fills frame at minDistance
   const cam = new PerspectiveCamera(26, w / h, 0.01, 500);
   cam.position.set(0, 1.0, 5);
   return cam;
 }
 
-function createRenderer(canvas, w, h) {
+function createRenderer(
+  canvas: HTMLCanvasElement,
+  w: number,
+  h: number,
+): WebGLRenderer {
   const testCtx = canvas.getContext("webgl2") || canvas.getContext("webgl");
   if (!testCtx) throw new Error("WebGL not supported in this browser.");
 
@@ -77,7 +111,7 @@ function createRenderer(canvas, w, h) {
   return renderer;
 }
 
-function createLights(scene) {
+function createLights(scene: Scene): void {
   // Warm ambient base
   scene.add(new AmbientLight(0x1a2e28, 2.0));
 
@@ -119,7 +153,7 @@ function createLights(scene) {
   scene.add(underLight);
 }
 
-function createAdvancedGrid(scene) {
+function createAdvancedGrid(scene: Scene): Group {
   const group = new Group();
 
   // Main holographic grid floor
@@ -268,7 +302,10 @@ function createGridParticles() {
   return new Points(geometry, material);
 }
 
-function createControls(camera, domElement) {
+function createControls(
+  camera: PerspectiveCamera,
+  domElement: HTMLCanvasElement,
+): OrbitControls {
   const ctrl = new OrbitControls(camera, domElement);
 
   // Basic settings
@@ -297,7 +334,7 @@ function createControls(camera, domElement) {
   return ctrl;
 }
 
-function autoFitModel(gltf) {
+function autoFitModel(gltf: GLTF) {
   const root = gltf.scene;
 
   const box1 = new Box3().setFromObject(root);
@@ -319,57 +356,72 @@ function autoFitModel(gltf) {
   return root;
 }
 
-function collectMeshes(root) {
-  const list = [];
-  root.traverse((obj) => {
-    if (obj.isMesh) {
-      obj.castShadow = true;
-      obj.receiveShadow = true;
+function collectMeshes(root: Group): Mesh[] {
+  const list: Mesh[] = [];
+  root.traverse((obj: Object3D) => {
+    if (obj instanceof Mesh) {
+      const mesh = obj as Mesh;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
 
-      // Enhance materials for better visualization
-      if (obj.material) {
-        const mats = Array.isArray(obj.material)
-          ? obj.material
-          : [obj.material];
-        mats.forEach((mat) => {
-          if (mat) {
-            mat.roughness = 0.45;
-            mat.metalness = 0.15;
-            mat.envMapIntensity = 1.2;
+      const materials = Array.isArray(mesh.material)
+        ? mesh.material
+        : mesh.material
+          ? [mesh.material]
+          : [];
 
-            // Store original colors for highlighting
-            if (!mat.userData._origColor) {
-              mat.userData._origColor = mat.color.clone();
-              mat.userData._origEmissive = mat.emissive.clone();
-            }
-          }
-        });
-      }
+      materials.forEach((mat) => {
+        if (!(mat instanceof MeshStandardMaterial)) return;
+        mat.roughness = 0.45;
+        mat.metalness = 0.15;
+        mat.envMapIntensity = 1.2;
 
-      list.push(obj);
+        if (!mat.userData._origColor) {
+          mat.userData._origColor = mat.color.clone();
+          mat.userData._origEmissive = mat.emissive.clone();
+          mat.userData._origRoughness = mat.roughness;
+        }
+      });
+
+      list.push(mesh);
     }
   });
   return list;
 }
 
-function disposeMesh(obj) {
-  if (!obj.isMesh) return;
+function disposeMesh(obj: Object3D): void {
+  if (!(obj instanceof Mesh)) return;
   obj.geometry?.dispose();
-  const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
-  mats.forEach((m) => {
+  const materials = Array.isArray(obj.material)
+    ? obj.material
+    : obj.material
+      ? [obj.material]
+      : [];
+
+  materials.forEach((m) => {
     if (!m) return;
-    Object.values(m).forEach((v) => {
-      if (v?.isTexture) v.dispose();
+    Object.values(m).forEach((value) => {
+      if (
+        value &&
+        typeof value === "object" &&
+        "isTexture" in value &&
+        (value as Texture).isTexture &&
+        typeof (value as Texture).dispose === "function"
+      ) {
+        (value as Texture).dispose();
+      }
     });
-    m.dispose();
+    if (typeof m.dispose === "function") {
+      m.dispose();
+    }
   });
 }
 
 // ─── Enhanced Highlight helpers ────────────────────────────────────────────────
-function applyHighlight(mesh) {
+function applyHighlight(mesh: Mesh): void {
   const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
   mats.forEach((m) => {
-    if (!m) return;
+    if (!(m instanceof MeshStandardMaterial)) return;
 
     // Store original values
     if (!m.userData._origColor) {
@@ -383,17 +435,14 @@ function applyHighlight(mesh) {
     m.emissive.copy(TEAL);
     m.emissiveIntensity = 0.5;
     m.roughness = 0.25;
-
-    if (m.emissive) {
-      m.needsUpdate = true;
-    }
+    m.needsUpdate = true;
   });
 }
 
-function removeHighlight(mesh) {
+function removeHighlight(mesh: Mesh): void {
   const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
   mats.forEach((m) => {
-    if (!m) return;
+    if (!(m instanceof MeshStandardMaterial)) return;
 
     if (m.userData._origColor) {
       m.color.copy(m.userData._origColor);
@@ -406,11 +455,11 @@ function removeHighlight(mesh) {
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export default function SkeletonViewer({ showDebug = false }) {
-  const mountRef = useRef(null);
-  const stateRef = useRef(null);
-  const rafRef = useRef(null);
-  const [info, setInfo] = useState({
+export function SkeletonViewer({ showDebug = false }: SkeletonViewerProps) {
+  const mountRef = useRef<HTMLDivElement | null>(null);
+  const stateRef = useRef<ViewerState | null>(null);
+  const rafRef = useRef<number>(0);
+  const [info, setInfo] = useState<ViewerInfo>({
     phase: "loading",
     pct: 0,
     bone: null,
@@ -428,7 +477,10 @@ export default function SkeletonViewer({ showDebug = false }) {
     const W = wrapper.clientWidth || window.innerWidth;
     const H = wrapper.clientHeight || window.innerHeight;
 
-    let scene, camera, renderer, controls;
+    let scene: Scene;
+    let camera: PerspectiveCamera;
+    let renderer: WebGLRenderer;
+    let controls: OrbitControls;
     try {
       scene = createScene();
       camera = createCamera(W, H);
@@ -436,7 +488,12 @@ export default function SkeletonViewer({ showDebug = false }) {
       controls = createControls(camera, renderer.domElement);
     } catch (err) {
       console.error("[SkeletonViewer] Init error:", err);
-      setInfo({ phase: "error", error: err.message });
+      setInfo({
+        phase: "error",
+        pct: 0,
+        bone: null,
+        error: getErrorMessage(err),
+      });
       canvas.remove();
       return;
     }
@@ -475,13 +532,13 @@ export default function SkeletonViewer({ showDebug = false }) {
 
     loader.load(
       "/skeleton-optimized.glb",
-      (gltf) => {
+      (gltf: GLTF) => {
         if (!alive) return;
 
         const model = autoFitModel(gltf);
         const meshes = collectMeshes(model);
         scene.add(model);
-        stateRef.current.meshes = meshes;
+        if (stateRef.current) stateRef.current.meshes = meshes;
 
         const box = new Box3().setFromObject(model);
         const size = new Vector3();
@@ -505,16 +562,18 @@ export default function SkeletonViewer({ showDebug = false }) {
         setInfo({ phase: "ready", pct: 100, bone: null, error: null });
         console.log("[SkeletonViewer] Model loaded — meshes:", meshes.length);
       },
-      ({ loaded, total }) => {
+      ({ loaded, total }: { loaded: number; total?: number }) => {
         if (!alive) return;
-        const pct = total > 0 ? Math.round((loaded / total) * 100) : 0;
+        const pct = total && total > 0 ? Math.round((loaded / total) * 100) : 0;
         setInfo((p) => ({ ...p, pct }));
       },
-      (err) => {
+      (err: unknown) => {
         if (!alive) return;
         console.error("[SkeletonViewer] Load error:", err);
         setInfo({
           phase: "error",
+          pct: 0,
+          bone: null,
           error: "Cannot load /public/skeleton.glb — check the file exists.",
         });
       },
@@ -536,8 +595,10 @@ export default function SkeletonViewer({ showDebug = false }) {
     const raycaster = new Raycaster();
     const mouse = new Vector2();
 
-    const onClick = (e) => {
-      const { meshes, selected } = stateRef.current;
+    const onClick = (e: MouseEvent) => {
+      const currentState = stateRef.current;
+      if (!currentState) return;
+      const { meshes, selected } = currentState;
       if (!meshes.length) return;
 
       const rect = canvas.getBoundingClientRect();
@@ -550,10 +611,12 @@ export default function SkeletonViewer({ showDebug = false }) {
       const hits = raycaster.intersectObjects(meshes, false);
 
       if (hits.length) {
-        const hit = hits[0].object;
+        const candidate = hits[0].object;
+        if (!(candidate instanceof Mesh)) return;
+        const hit = candidate as Mesh;
         if (selected && selected !== hit) removeHighlight(selected);
         applyHighlight(hit);
-        stateRef.current.selected = hit;
+        currentState.selected = hit;
         const name = hit.name || hit.parent?.name || "unnamed";
         console.log("[SkeletonViewer] Selected:", name);
         setInfo((p) => ({ ...p, bone: name }));
@@ -565,13 +628,13 @@ export default function SkeletonViewer({ showDebug = false }) {
         }, 3000);
       } else {
         if (selected) removeHighlight(selected);
-        stateRef.current.selected = null;
+        currentState.selected = null;
         setInfo((p) => ({ ...p, bone: null }));
       }
     };
 
     // Fix for wheel/zoom event
-    const onWheel = (e) => {
+    const onWheel = (e: WheelEvent) => {
       // Don't prevent default - let OrbitControls handle it
       e.stopPropagation();
     };
@@ -586,9 +649,14 @@ export default function SkeletonViewer({ showDebug = false }) {
       // Subtle grid animation
       if (gridGroup) {
         gridGroup.children.forEach((child, index) => {
-          if (child.isMesh && child.material.transparent) {
-            const time = Date.now() * 0.001;
-            child.material.opacity = 0.15 + Math.sin(time * 0.5 + index) * 0.1;
+          if (child instanceof Mesh) {
+            const mat = Array.isArray(child.material)
+              ? child.material[0]
+              : child.material;
+            if (mat?.transparent) {
+              const time = Date.now() * 0.001;
+              mat.opacity = 0.15 + Math.sin(time * 0.5 + index) * 0.1;
+            }
           }
         });
       }
@@ -624,27 +692,30 @@ export default function SkeletonViewer({ showDebug = false }) {
   const error = info.phase === "error";
 
   return (
-    <div ref={mountRef} style={S.wrapper}>
-      <div style={S.scanlines} />
-      <div style={S.vignette} />
+    <div ref={mountRef} className={styles.wrapper}>
+      <div className={styles.scanlines} />
+      <div className={styles.vignette} />
 
       {loading && (
-        <div style={S.overlay}>
-          <div style={S.spinner} />
-          <p style={S.loaderText}>
+        <div className={styles.overlay}>
+          <div className={styles.spinner} />
+          <p className={styles.loaderText}>
             INITIALIZING SKELETON{info.pct > 0 ? ` · ${info.pct}%` : "…"}
           </p>
-          <div style={S.progressBar}>
-            <div style={{ ...S.progressFill, width: `${info.pct}%` }} />
+          <div className={styles.progressBar}>
+            <div
+              className={styles.progressFill}
+              style={{ width: `${info.pct}%` }}
+            />
           </div>
         </div>
       )}
 
       {error && (
-        <div style={S.overlay}>
-          <p style={S.errText}>⚠ SYSTEM ERROR</p>
-          <p style={S.errSub}>{info.error}</p>
-          <p style={S.errHint}>
+        <div className={styles.overlay}>
+          <p className={styles.errText}>⚠ SYSTEM ERROR</p>
+          <p className={styles.errSub}>{info.error}</p>
+          <p className={styles.errHint}>
             Place <code>skeleton.glb</code> in <code>/public/</code>
           </p>
         </div>
@@ -652,22 +723,22 @@ export default function SkeletonViewer({ showDebug = false }) {
 
       {ready && (
         <>
-          <aside style={S.panel}>
-            <div style={S.divider} />
+          <aside className={styles.panel}>
+            <div className={styles.divider} />
             <Row
               label="SELECTED"
               value={info.bone ?? "—"}
               valueColor={info.bone ? "#ffaa00" : "#2a4a5a"}
             />
             {info.bone && (
-              <div style={S.highlightIndicator}>
-                <span style={S.highlightDot}>◆</span>
-                <span style={S.highlightText}>HIGHLIGHT ACTIVE</span>
+              <div className={styles.highlightIndicator}>
+                <span className={styles.highlightDot}>◆</span>
+                <span className={styles.highlightText}>HIGHLIGHT ACTIVE</span>
               </div>
             )}
           </aside>
 
-          <footer style={S.footer}>
+          <footer className={styles.footer}>
             <Hint icon="⟳" label="Drag · Rotate" />
             <Hint icon="⊕" label="Scroll · Zoom" />
             <Hint icon="⌖" label="Right · Pan" />
@@ -681,26 +752,36 @@ export default function SkeletonViewer({ showDebug = false }) {
 }
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
-function Row({ label, value, valueColor }) {
+function Row({
+  label,
+  value,
+  valueColor,
+}: {
+  label: string;
+  value: string;
+  valueColor: string;
+}) {
   return (
-    <div style={S.row}>
-      <span style={S.rowLabel}>{label}</span>
-      <span style={{ ...S.rowValue, color: valueColor }}>{value}</span>
+    <div className={styles.row}>
+      <span className={styles.rowLabel}>{label}</span>
+      <span className={styles.rowValue} style={{ color: valueColor }}>
+        {value}
+      </span>
     </div>
   );
 }
 
-function Hint({ icon, label }) {
+function Hint({ icon, label }: { icon: string; label: string }) {
   return (
-    <div style={S.hint}>
-      <span style={S.hintIcon}>{icon}</span>
-      <span style={S.hintLabel}>{label}</span>
+    <div className={styles.hint}>
+      <span className={styles.hintIcon}>{icon}</span>
+      <span className={styles.hintLabel}>{label}</span>
     </div>
   );
 }
 
 // ─── Enhanced Styles ──────────────────────────────────────────────────────────
-const S = {
+const _S = {
   wrapper: {
     position: "relative",
     width: "100%",

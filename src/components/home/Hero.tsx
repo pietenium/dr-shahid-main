@@ -4,9 +4,13 @@ import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { FALLBACKS } from "@/constants/fallbacks";
 
 const SkeletonViewer = dynamic(
-  () => import("@/components/main/SkeletonViewer/SkeletonViewer"),
+  () =>
+    import("@/components/main/SkeletonViewer/SkeletonViewer").then(
+      (mod) => mod.SkeletonViewer,
+    ),
   {
     ssr: false,
     loading: () => <Skeleton variant="image" className="h-full w-full" />,
@@ -58,7 +62,7 @@ export const Hero = () => {
             </h1>
 
             <p className="text-lg text-text-para-light dark:text-text-para-dark max-w-lg leading-relaxed">
-              Dr. Sahidur Rahman Khan combines advanced surgical techniques with
+              {FALLBACKS.doctorName} combines advanced surgical techniques with
               compassionate care. Specialising in joint replacement, sports
               medicine, and complex trauma.
             </p>

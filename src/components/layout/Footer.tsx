@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { FALLBACKS } from "@/constants/fallbacks";
 import { FOOTER_LINKS } from "@/constants/navigation";
 import type { AppInfo } from "@/types/app-info";
 
@@ -18,7 +19,7 @@ export const Footer = ({ appInfo }: { appInfo?: AppInfo }) => {
                 {(appInfo?.doctorName?.trim()?.[0] ?? "D").toUpperCase()}
               </div>
               <span className="font-bold text-xl text-text-heading-light dark:text-white">
-                {appInfo?.doctorName ?? "Dr. Sahidur Rahman Khan"}
+                {appInfo?.doctorName ?? FALLBACKS.doctorName}
               </span>
             </Link>
             <p className="text-sm leading-relaxed opacity-80">
@@ -89,10 +90,10 @@ export const Footer = ({ appInfo }: { appInfo?: AppInfo }) => {
                 Phone
               </span>
               <a
-                href={`tel:${appInfo?.phone ?? "+880123456789"}`}
+                href={`tel:${(appInfo?.phone ?? FALLBACKS.phone).replace(/\D/g, "")}`}
                 className="text-lg font-bold text-text-heading-light dark:text-white hover:text-brand-primary dark:hover:text-brand-primary transition-colors"
               >
-                {appInfo?.phone ?? "+880 1234-56789"}
+                {appInfo?.phone ?? FALLBACKS.phone}
               </a>
             </div>
           </div>
@@ -100,7 +101,10 @@ export const Footer = ({ appInfo }: { appInfo?: AppInfo }) => {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-border-light dark:border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] font-medium uppercase tracking-[0.2em]">
-          <p>© {currentYear} DR. SAHIDUR RAHMAN KHAN. ALL RIGHTS RESERVED.</p>
+          <p>
+            © {currentYear} {FALLBACKS.doctorName.toUpperCase()}. ALL RIGHTS
+            RESERVED.
+          </p>
           <div className="flex items-center gap-8">
             <Link
               href="/terms"
