@@ -27,7 +27,7 @@ export default async function Home() {
       ) : null}
 
       {testimonials?.docs?.length ? (
-        <TestimonialsCarousel testimonials={testimonials.docs} />
+        <TestimonialsCarousel testimonials={testimonials.docs.slice(0, 5)} />
       ) : null}
 
       <CTASection clinicHours={appInfo?.clinicHours} />

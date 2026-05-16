@@ -21,11 +21,12 @@ export default async function TestimonialsPage() {
   }
 
   return (
-    <div className="container mx-auto px-6 py-12">
+    <div className="container mx-auto px-6 py-20">
       <SectionHeading
         badge="Wall of Gratitude"
         title="Patient Success Stories"
         subtitle="The greatest reward in medicine is seeing my patients return to their active lives. Here are some of their stories."
+        centered
       />
 
       {!data?.docs || data.docs.length === 0 ? (
@@ -34,9 +35,9 @@ export default async function TestimonialsPage() {
           description="We haven't added any patient stories yet. If you've been a patient of Dr. Sahidur, we'd love to hear from you!"
         />
       ) : (
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-8 [column-fill:balance]">
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-10 [column-fill:balance] space-y-10">
           {data.docs.map((testimonial, idx) => (
-            <div key={testimonial._id} className="mb-8 break-inside-avoid">
+            <div key={testimonial._id} className="break-inside-avoid mb-10">
               <TestimonialCard testimonial={testimonial} idx={idx} />
             </div>
           ))}
@@ -44,19 +45,21 @@ export default async function TestimonialsPage() {
       )}
 
       {/* Submission Hint */}
-      <div className="mt-24 max-w-2xl mx-auto text-center p-12 rounded-3xl bg-brand-softbg dark:bg-brand-primary/10 border border-dashed border-brand-primary/30">
-        <h3 className="text-2xl font-bold text-text-heading-light dark:text-text-heading-dark mb-4">
-          Share Your Story
+      <div className="mt-32 max-w-3xl mx-auto text-center p-16 rounded-[2.5rem] bg-brand-softbg dark:bg-brand-primary/10 border border-dashed border-brand-primary/30">
+        <h3 className="text-3xl font-bold text-text-heading-light dark:text-text-heading-dark mb-6">
+          Share Your Journey
         </h3>
-        <p className="text-text-para-light dark:text-text-para-dark mb-8">
-          Have you recently undergone treatment or surgery with Dr. Sahidur?
-          Your feedback helps others on their journey to recovery.
+        <p className="text-lg text-text-para-light dark:text-text-para-dark mb-10 max-w-xl mx-auto leading-relaxed">
+          Your recovery story can inspire others facing similar orthopedic challenges. We would love to hear about your experience.
         </p>
         <a
           href="mailto:testimonials@drshahidur.com"
-          className="inline-flex items-center gap-2 px-8 py-4 bg-brand-primary text-white rounded-xl font-bold uppercase tracking-widest hover:bg-brand-hover transition-all"
+          className="inline-flex items-center gap-3 px-10 py-5 bg-brand-primary text-white rounded-2xl font-bold uppercase tracking-widest hover:bg-brand-hover transition-all shadow-xl shadow-brand-primary/20"
         >
-          Email Your Feedback
+          <span>Email Your Feedback</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+          </svg>
         </a>
       </div>
     </div>
