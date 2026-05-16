@@ -42,9 +42,9 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           maxLength={maxLength}
           value={value}
           className={cn(
-            "w-full rounded-lg border bg-card-light dark:bg-card-dark px-3 py-2 text-sm transition-all outline-none resize-none min-h-25",
+            "w-full rounded-lg border bg-card-light dark:bg-card-dark px-3 py-2 text-sm transition-all outline-none resize-none min-h-25 focus:-translate-y-px duration-200",
             "border-border-light dark:border-border-dark",
-            "focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10",
+            "focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none",
             error &&
               "border-red-500 focus:border-red-500 focus:ring-red-500/10",
             className,

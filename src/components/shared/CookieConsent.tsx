@@ -32,7 +32,7 @@ export const CookieConsent = () => {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 right-6 z-50 md:left-auto md:right-6 md:max-w-md p-6 rounded-3xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-2xl">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-3rem)] max-w-md p-6 rounded-3xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-2xl">
       <div className="space-y-4">
         <p className="text-sm text-text-para-light dark:text-text-para-dark leading-relaxed">
           We use analytics cookies to understand how visitors interact with the

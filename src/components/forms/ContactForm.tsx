@@ -131,8 +131,26 @@ export const ContactForm = () => {
       >
         Send Message
       </Button>
-      <p className="text-[10px] text-center text-text-para-light dark:text-text-para-dark opacity-40 uppercase tracking-widest">
-        Protected by reCAPTCHA v3
+      <p className="text-[10px] text-center text-text-para-light dark:text-text-para-dark opacity-50 leading-relaxed">
+        This site is protected by reCAPTCHA and the Google{" "}
+        <a
+          href="https://policies.google.com/privacy"
+          target="_blank"
+          rel="noreferrer"
+          className="underline hover:text-brand-primary transition-colors"
+        >
+          Privacy Policy
+        </a>{" "}
+        and{" "}
+        <a
+          href="https://policies.google.com/terms"
+          target="_blank"
+          rel="noreferrer"
+          className="underline hover:text-brand-primary transition-colors"
+        >
+          Terms of Service
+        </a>{" "}
+        apply.
       </p>
     </form>
   );

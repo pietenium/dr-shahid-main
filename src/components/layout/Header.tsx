@@ -76,13 +76,19 @@ export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
               key={link.href}
               href={link.href}
               className={cn(
-                "text-sm font-semibold transition-colors hover:text-brand-primary",
+                "relative text-sm font-semibold transition-colors hover:text-brand-primary group",
                 pathname === link.href
                   ? "text-brand-primary"
                   : "text-text-para-light dark:text-text-para-dark",
               )}
             >
               {link.label}
+              <span
+                className={cn(
+                  "absolute -bottom-1 left-0 h-0.5 bg-brand-primary transition-all duration-300",
+                  pathname === link.href ? "w-full" : "w-0 group-hover:w-full",
+                )}
+              />
             </Link>
           ))}
         </nav>
@@ -204,23 +210,35 @@ export const Header = ({ appInfo }: { appInfo?: AppInfo }) => {
               ref={menuRef}
               className="container mx-auto px-6 py-8 flex flex-col gap-6"
             >
-              {NAV_LINKS.map((link) => (
-                <Link
+              {NAV_LINKS.map((link, i) => (
+                <motion.div
                   key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "text-lg font-bold transition-colors",
-                    pathname === link.href
-                      ? "text-brand-primary"
-                      : "text-text-para-light dark:text-text-para-dark",
-                  )}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
                 >
-                  {link.label}
-                </Link>
+                  <Link
+                    href={link.href}
+                    className={cn(
+                      "text-lg font-bold transition-colors block w-full",
+                      pathname === link.href
+                        ? "text-brand-primary"
+                        : "text-text-para-light dark:text-text-para-dark",
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                </motion.div>
               ))}
-              <Button href="/appointment" className="w-full mt-4">
-                Book Appointment
-              </Button>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: NAV_LINKS.length * 0.05 }}
+              >
+                <Button href="/appointment" className="w-full mt-4">
+                  Book Appointment
+                </Button>
+              </motion.div>
             </div>
           </motion.div>
         )}

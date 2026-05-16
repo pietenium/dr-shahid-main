@@ -181,3 +181,9 @@ body {
   padding: 1em;
   overflow-x: auto;
 }
+/* Hide reCAPTCHA badge for clean portfolio mode */
+.grecaptcha-badge {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}

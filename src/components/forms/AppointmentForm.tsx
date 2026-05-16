@@ -339,8 +339,30 @@ export const AppointmentForm = () => {
       >
         Submit Appointment Request
       </Button>
-      <p className="text-[10px] text-center text-text-para-light dark:text-text-para-dark opacity-40 uppercase tracking-widest">
-        A representative will contact you for final confirmation.
+      <p className="text-[10px] text-center text-text-para-light dark:text-text-para-dark opacity-50 leading-relaxed space-y-1">
+        <span>A representative will contact you for final confirmation.</span>
+        <br />
+        <span>
+          This site is protected by reCAPTCHA and the Google{" "}
+          <a
+            href="https://policies.google.com/privacy"
+            target="_blank"
+            rel="noreferrer"
+            className="underline hover:text-brand-primary transition-colors"
+          >
+            Privacy Policy
+          </a>{" "}
+          and{" "}
+          <a
+            href="https://policies.google.com/terms"
+            target="_blank"
+            rel="noreferrer"
+            className="underline hover:text-brand-primary transition-colors"
+          >
+            Terms of Service
+          </a>{" "}
+          apply.
+        </span>
       </p>
     </form>
   );

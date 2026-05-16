@@ -49,6 +49,7 @@ const TEAL_LIGHT = new Color(0x3fcba0); // lighter teal for highlights
 
 type SkeletonViewerProps = {
   showDebug?: boolean;
+  theme?: "light" | "dark";
 };
 
 type ViewerInfo = {
@@ -72,11 +73,14 @@ const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
 
 // ─── Pure helpers (no React) ──────────────────────────────────────────────────
-function createScene(): Scene {
+function createScene(theme: "light" | "dark" = "dark"): Scene {
   const scene = new Scene();
-  // Solid dark-teal background — works in both light & dark mode
-  scene.background = new Color(0x060f0c);
-  scene.fog = new FogExp2(0x071a14, 0.016);
+  // We use null background to allow the CSS background to show through (transparency)
+  // This ensures perfect consistency with the project's background
+  scene.background = null;
+
+  const fogColor = theme === "light" ? 0xd4ede3 : 0x071a14;
+  scene.fog = new FogExp2(fogColor, 0.016);
   return scene;
 }
 
@@ -455,7 +459,10 @@ function removeHighlight(mesh: Mesh): void {
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function SkeletonViewer({ showDebug = false }: SkeletonViewerProps) {
+export function SkeletonViewer({
+  showDebug = false,
+  theme = "dark",
+}: SkeletonViewerProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const stateRef = useRef<ViewerState | null>(null);
   const rafRef = useRef<number>(0);
@@ -465,6 +472,16 @@ export function SkeletonViewer({ showDebug = false }: SkeletonViewerProps) {
     bone: null,
     error: null,
   });
+
+  // ── Reactively update scene background when theme changes ──────────────────
+  useEffect(() => {
+    const state = stateRef.current;
+    if (!state) return;
+    const fogColor = theme === "light" ? 0xd4ede3 : 0x071a14;
+    if (state.scene.fog) {
+      (state.scene.fog as import("three").FogExp2).color.set(fogColor);
+    }
+  }, [theme]);
 
   useEffect(() => {
     const wrapper = mountRef.current;
@@ -482,7 +499,7 @@ export function SkeletonViewer({ showDebug = false }: SkeletonViewerProps) {
     let renderer: WebGLRenderer;
     let controls: OrbitControls;
     try {
-      scene = createScene();
+      scene = createScene(theme);
       camera = createCamera(W, H);
       renderer = createRenderer(canvas, W, H);
       controls = createControls(camera, renderer.domElement);

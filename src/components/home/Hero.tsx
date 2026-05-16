@@ -2,9 +2,37 @@
 
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { FALLBACKS } from "@/constants/fallbacks";
+import { useTheme } from "@/providers/ThemeProvider";
+
+function useCountUp(target: number, duration = 2000) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    let start: number;
+    const animate = (ts: number) => {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      setCount(Math.floor(progress * target));
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          requestAnimationFrame(animate);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 },
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [target, duration]);
+  return { count, ref };
+}
 
 const SkeletonViewer = dynamic(
   () =>
@@ -18,6 +46,10 @@ const SkeletonViewer = dynamic(
 );
 
 export const Hero = () => {
+  const { resolvedTheme } = useTheme();
+  const { count: years, ref: yearsRef } = useCountUp(15);
+  const { count: surgeries, ref: surgeriesRef } = useCountUp(5000, 2500);
+
   return (
     /**
      * Layout intent:
@@ -89,8 +121,11 @@ export const Hero = () => {
           {/* Trust badges */}
           <div className="flex items-center gap-8 pt-2 border-t border-border-light dark:border-border-dark w-fit">
             <div>
-              <span className="block text-3xl font-bold text-brand-primary">
-                15+
+              <span
+                ref={yearsRef}
+                className="block text-3xl font-bold text-brand-primary"
+              >
+                {years}+
               </span>
               <span className="text-[11px] uppercase tracking-wider font-semibold opacity-50">
                 Years Experience
@@ -98,8 +133,14 @@ export const Hero = () => {
             </div>
             <div className="w-px h-10 bg-border-light dark:bg-border-dark" />
             <div>
-              <span className="block text-3xl font-bold text-brand-primary">
-                5k+
+              <span
+                ref={surgeriesRef}
+                className="block text-3xl font-bold text-brand-primary"
+              >
+                {surgeries > 999
+                  ? `${(surgeries / 1000).toFixed(0)}k`
+                  : surgeries}
+                +
               </span>
               <span className="text-[11px] uppercase tracking-wider font-semibold opacity-50">
                 Successful Surgeries
@@ -119,11 +160,11 @@ export const Hero = () => {
            * p-8 gives equal 32px gap on every edge of the inner card.
            * -mx-6 + pr-0 lets it bleed to the right viewport edge.
            */
-          className="hidden lg:flex items-center justify-center bg-brand-softbg dark:bg-brand-primary/5 rounded-l-[80px] p-8 -mr-6"
+          className="hidden lg:flex items-center justify-center bg-brand-softbg dark:bg-brand-primary/5 rounded-l-[80px] p-8 relative overflow-hidden"
         >
           {/* Dark 3D medical viewer card */}
           <div className="relative w-full max-w-125 aspect-4/5 max-h-[80vh] rounded-4xl overflow-hidden bg-bg-light dark:bg-bg-dark shadow-[0_24px_80px_-12px_rgba(0,0,0,0.25),0_0_0_1px_rgba(47,160,132,0.15)] mx-auto">
-            <SkeletonViewer showDebug={false} />
+            <SkeletonViewer showDebug={false} theme={resolvedTheme} />
 
             {/* Rotate & Explore pill — inside the card */}
             <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 px-5 py-2 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-white text-[10px] uppercase tracking-[0.2em] font-bold pointer-events-none whitespace-nowrap z-20">
@@ -156,6 +197,8 @@ export const Hero = () => {
               </svg>
             </div>
           </div>
+          {/* Bottom gradient fade — blends panel into the next section */}
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-bg-light dark:from-bg-dark to-transparent pointer-events-none rounded-bl-[80px]" />
         </motion.div>
       </div>
     </section>

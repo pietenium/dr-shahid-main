@@ -7,6 +7,21 @@
   overflow: hidden;
   user-select: none;
   touch-action: none;
+
+  /* Theme variables for the viewer's UI */
+  --overlay-bg: rgba(234, 246, 240, 0.9);
+  --panel-bg: rgba(234, 246, 240, 0.7);
+  --footer-bg: rgba(234, 246, 240, 0.85);
+  --vignette-color: rgba(47, 160, 132, 0.15);
+  --text-main: #2fa084;
+  --text-alt: #3fcba0;
+}
+
+:global(.dark) .wrapper {
+  --overlay-bg: rgba(5, 10, 15, 0.9);
+  --panel-bg: rgba(7, 26, 20, 0.7);
+  --footer-bg: rgba(7, 26, 20, 0.85);
+  --vignette-color: rgba(5, 10, 15, 0.4);
 }
 .scanlines {
   position: absolute;
@@ -29,7 +44,7 @@
   background: radial-gradient(
     circle at 50% 50%,
     transparent 40%,
-    rgba(5, 10, 15, 0.4) 100%
+    var(--vignette-color) 100%
   );
 }
 .overlay {
@@ -41,7 +56,7 @@
   align-items: center;
   justify-content: center;
   gap: 20px;
-  background: rgba(5, 10, 15, 0.85);
+  background: var(--overlay-bg);
   backdrop-filter: blur(8px);
 }
 .spinner {
@@ -98,7 +113,7 @@
   right: 16px;
   width: 200px;
   padding: 12px 16px;
-  background: rgba(7, 26, 20, 0.7);
+  background: var(--panel-bg);
   border: 1px solid rgba(47, 160, 132, 0.25);
   border-radius: 10px;
   backdrop-filter: blur(12px);
@@ -144,7 +159,7 @@
   display: flex;
   gap: 20px;
   padding: 8px 22px;
-  background: rgba(7, 26, 20, 0.85);
+  background: var(--footer-bg);
   border: 1px solid rgba(47, 160, 132, 0.2);
   border-radius: 30px;
   backdrop-filter: blur(16px);

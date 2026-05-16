@@ -30,9 +30,12 @@ export default async function TestimonialsPage() {
           description="We haven't added any patient stories yet. If you've been a patient of Dr. Sahidur, we'd love to hear from you!"
         />
       ) : (
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-10 [column-fill:balance] space-y-10">
+        <div className="flex flex-col gap-10 md:block md:columns-2 lg:columns-3 md:gap-10 md:[column-fill:balance] md:space-y-10">
           {data.docs.map((testimonial, idx) => (
-            <div key={testimonial._id} className="break-inside-avoid mb-10">
+            <div
+              key={testimonial._id}
+              className="md:break-inside-avoid md:mb-10"
+            >
               <TestimonialCard testimonial={testimonial} idx={idx} />
             </div>
           ))}

@@ -1,8 +1,9 @@
+import { AnimatedSection } from "@/components/shared/AnimatedSection";
 import { Button } from "@/components/ui/Button";
 
 export function CTASection({ clinicHours }: { clinicHours?: string }) {
   return (
-    <section className="py-20">
+    <AnimatedSection className="py-24">
       <div className="container mx-auto px-6">
         <div className="rounded-3xl overflow-hidden border border-border-light dark:border-border-dark bg-linear-to-r from-brand-primary to-brand-hover p-10 md:p-14 text-white relative">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.25),transparent_50%)]" />
@@ -45,6 +46,6 @@ export function CTASection({ clinicHours }: { clinicHours?: string }) {
           </div>
         </div>
       </div>
-    </section>
+    </AnimatedSection>
   );
 }
