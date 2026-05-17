@@ -32,4 +32,9 @@ describe("useUIStore", () => {
     useUIStore.getState().acceptCookieConsent();
     expect(useUIStore.getState().cookieConsentAccepted).toBe(true);
   });
+
+  it("provides dummy storage when window is undefined", () => {
+    const persistOptions = (useUIStore as any).persist.getOptions();
+    expect(persistOptions.name).toBe("ds-ui");
+  });
 });

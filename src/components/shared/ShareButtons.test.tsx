@@ -36,4 +36,23 @@ describe("ShareButtons", () => {
     const link = screen.getByLabelText("Copy link").closest("a");
     expect(link?.href).toContain("/research/knee-replacement");
   });
+
+  it("calls navigator.share if available", async () => {
+    const mockShare = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { share: mockShare });
+
+    render(<ShareButtons {...props} />);
+    
+    // The native share button has aria-label="Share" (the first one)
+    const nativeShareButton = screen.getByLabelText("Share");
+    nativeShareButton.click();
+
+    expect(mockShare).toHaveBeenCalledWith({
+      title: "Knee Replacement Guide",
+      url: "https://drshahid.com/articles/knee-replacement",
+    });
+
+    // Clean up
+    delete (navigator as any).share;
+  });
 });

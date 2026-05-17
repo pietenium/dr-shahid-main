@@ -45,3 +45,5 @@ frontend_plans_and_works/
 #test
 playwright-report/
 rest-results/
+.playwright/
+test-results/

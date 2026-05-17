@@ -34,4 +34,9 @@ describe("Pagination", () => {
     render(<Pagination currentPage={1} totalPages={3} basePath="/articles" />);
     expect(screen.getByText("2").closest("a")).toHaveAttribute("href", "/articles?page=2");
   });
+
+  it("renders '#' links if onPageChange and basePath are both missing", () => {
+    render(<Pagination currentPage={1} totalPages={3} />);
+    expect(screen.getByText("2").closest("a")).toHaveAttribute("href", "#");
+  });
 });

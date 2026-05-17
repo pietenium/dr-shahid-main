@@ -134,6 +134,10 @@ describe("extractHttpStatus()", () => {
     expect(extractHttpStatus({ message: "Network error" })).toBeUndefined();
   });
 
+  it("returns undefined for error with response but non-numeric status", () => {
+    expect(extractHttpStatus({ response: { status: "404" } })).toBeUndefined();
+  });
+
   it("returns undefined for null", () => {
     expect(extractHttpStatus(null)).toBeUndefined();
   });

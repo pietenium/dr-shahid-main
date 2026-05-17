@@ -59,10 +59,36 @@ describe("Modal", () => {
       </Modal>
     );
 
-    // Tab from close button should cycle to first button inside
-    await userEvent.tab(); // Focus close button
-    await userEvent.tab(); // Focus "First"
-    await userEvent.tab(); // Focus "Second"
-    await userEvent.tab(); // Should cycle back to close button
+    const closeButton = screen.getByLabelText("Close modal");
+    const firstButton = screen.getByText("First");
+    const secondButton = screen.getByText("Second");
+
+    // Explicitly focus Close modal
+    closeButton.focus();
+    expect(closeButton).toHaveFocus();
+
+    // Tab from Close modal should focus "First"
+    await user.tab();
+    expect(firstButton).toHaveFocus();
+
+    // Tab from "First" should focus "Second"
+    await user.tab();
+    expect(secondButton).toHaveFocus();
+
+    // Tab from "Second" should cycle back to Close modal
+    await user.tab();
+    expect(closeButton).toHaveFocus();
+
+    // Shift+Tab from Close modal should cycle to "Second"
+    await user.tab({ shift: true });
+    expect(secondButton).toHaveFocus();
+
+    // Shift+Tab from "Second" should focus "First"
+    await user.tab({ shift: true });
+    expect(firstButton).toHaveFocus();
+
+    // Shift+Tab from "First" should focus Close modal
+    await user.tab({ shift: true });
+    expect(closeButton).toHaveFocus();
   });
 });
