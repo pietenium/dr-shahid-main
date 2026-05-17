@@ -6,8 +6,16 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignoreUnknown": true,
-    "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
+    "includes": [
+      "**",
+      "!node_modules",
+      "!.next",
+      "!dist",
+      "!build",
+      "!**/*.test.{ts,tsx}",
+      "!src/__tests__"
+    ],
+    "ignoreUnknown": true
   },
   "formatter": {
     "enabled": true,
