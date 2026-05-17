@@ -23,7 +23,7 @@ export default async function ContactPage() {
       {/* Top Content: Breadcrumbs and Grid wrapped in max-w-5xl for compact, balanced sizing */}
       <div className="max-w-5xl mx-auto w-full">
         <Breadcrumbs title="Contact" />
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start mt-10">
           {/* Info Column */}
           <div className="space-y-12">
@@ -90,7 +90,11 @@ export default async function ContactPage() {
                     >
                       {phone}
                     </a>
-                    <CopyButton value={phone} label="copy" className="px-1.5 py-0.5 text-[8px] rounded-md font-semibold tracking-normal lowercase h-fit border border-border-light dark:border-border-dark" />
+                    <CopyButton
+                      value={phone}
+                      label="copy"
+                      className="px-1.5 py-0.5 text-[8px] rounded-md font-semibold tracking-normal lowercase h-fit border border-border-light dark:border-border-dark"
+                    />
                   </div>
                 </div>
               </div>
@@ -152,12 +156,15 @@ export default async function ContactPage() {
                     >
                       {email}
                     </a>
-                    <CopyButton value={email} label="copy" className="px-1.5 py-0.5 text-[8px] rounded-md font-semibold tracking-normal lowercase h-fit border border-border-light dark:border-border-dark shrink-0" />
+                    <CopyButton
+                      value={email}
+                      label="copy"
+                      className="px-1.5 py-0.5 text-[8px] rounded-md font-semibold tracking-normal lowercase h-fit border border-border-light dark:border-border-dark shrink-0"
+                    />
                   </div>
                 </div>
               </div>
             </div>
-
           </div>
 
           {/* Form Column */}
@@ -180,10 +187,11 @@ export default async function ContactPage() {
                 </h3>
               </div>
               <p className="text-sm text-text-para-light dark:text-text-para-dark opacity-80 max-w-sm leading-relaxed">
-                Located conveniently in Dhaka, with fully equipped modern consulting chambers.
+                Located conveniently in Dhaka, with fully equipped modern
+                consulting chambers.
               </p>
             </div>
-            
+
             <div className="rounded-3xl overflow-hidden border border-border-light dark:border-border-dark shadow-xl h-[350px]">
               <iframe
                 title="Map"
