@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 frontend_plans_and_works/
+
+#test
+playwright-report/
+rest-results/

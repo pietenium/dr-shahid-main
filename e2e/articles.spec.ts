@@ -4,7 +4,7 @@ test.describe("Articles", () => {
   test("loads articles page", async ({ page }) => {
     await page.goto("/articles");
     await expect(page).toHaveURL(/\/articles/);
-    await expect(page.locator("h1")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Articles & Medical Insights", level: 2 })).toBeVisible();
   });
 
   test("article detail page shows reading progress bar", async ({ page }) => {
