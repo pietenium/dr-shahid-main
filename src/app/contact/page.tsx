@@ -17,13 +17,14 @@ export default async function ContactPage() {
   const phone = appInfo?.phone ?? "+880123456789";
   const address = appInfo?.address ?? "Dhaka, Bangladesh";
   const clinicHours = appInfo?.clinicHours ?? "Sat - Thu: 04:00 PM - 09:00 PM";
-  const social = appInfo?.socialLinks ?? {};
 
   return (
-    <div className="container mx-auto px-6 py-12">
-      <div className="max-w-5xl mx-auto">
+    <div className="container mx-auto px-6 pt-32 pb-20 space-y-24">
+      {/* Top Content: Breadcrumbs and Grid wrapped in max-w-5xl for compact, balanced sizing */}
+      <div className="max-w-5xl mx-auto w-full">
         <Breadcrumbs title="Contact" />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start mt-10">
           {/* Info Column */}
           <div className="space-y-12">
             <SectionHeading
@@ -32,16 +33,17 @@ export default async function ContactPage() {
               subtitle="Whether you have a specific medical question or need guidance on orthopedic recovery, feel free to reach out."
             />
 
-            <div className="space-y-8">
-              <div className="flex gap-6">
-                <div className="w-12 h-12 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center shrink-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Location Card */}
+              <div className="p-5 bg-white dark:bg-card-dark rounded-2xl border border-border-light dark:border-border-dark hover:border-brand-primary/40 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group flex flex-col gap-3">
+                <div className="w-10 h-10 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center shrink-0 group-hover:bg-brand-primary group-hover:text-white transition-all duration-300">
                   <svg
-                    width="24"
-                    height="24"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
@@ -51,24 +53,25 @@ export default async function ContactPage() {
                   </svg>
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-text-heading-light dark:text-text-heading-dark">
+                  <h4 className="text-sm font-bold text-text-heading-light dark:text-text-heading-dark">
                     Clinic Location
                   </h4>
-                  <p className="text-text-para-light dark:text-text-para-dark opacity-80 leading-relaxed">
+                  <p className="text-text-para-light dark:text-text-para-dark opacity-80 leading-relaxed text-xs mt-1">
                     {address}
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-6">
-                <div className="w-12 h-12 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center shrink-0">
+              {/* Phone Card */}
+              <div className="p-5 bg-white dark:bg-card-dark rounded-2xl border border-border-light dark:border-border-dark hover:border-brand-primary/40 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group flex flex-col gap-3">
+                <div className="w-10 h-10 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center shrink-0 group-hover:bg-brand-primary group-hover:text-white transition-all duration-300">
                   <svg
-                    width="24"
-                    height="24"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
@@ -77,32 +80,31 @@ export default async function ContactPage() {
                   </svg>
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-text-heading-light dark:text-text-heading-dark">
+                  <h4 className="text-sm font-bold text-text-heading-light dark:text-text-heading-dark">
                     Phone & WhatsApp
                   </h4>
-                  <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2 mt-1">
                     <a
-                      href={`tel:${phone}`}
-                      className="text-text-para-light dark:text-text-para-dark opacity-80 leading-relaxed hover:text-brand-primary transition-colors"
+                      href={`tel:${phone.replace(/\D/g, "")}`}
+                      className="text-text-para-light dark:text-text-para-dark opacity-80 leading-relaxed text-xs hover:text-brand-primary transition-colors font-semibold"
                     >
                       {phone}
                     </a>
-                    <div className="flex items-center gap-2">
-                      <CopyButton value={phone} label="Copy phone" />
-                    </div>
+                    <CopyButton value={phone} label="copy" className="px-1.5 py-0.5 text-[8px] rounded-md font-semibold tracking-normal lowercase h-fit border border-border-light dark:border-border-dark" />
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-6">
-                <div className="w-12 h-12 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center shrink-0">
+              {/* Consultation Hours Card */}
+              <div className="p-5 bg-white dark:bg-card-dark rounded-2xl border border-border-light dark:border-border-dark hover:border-brand-primary/40 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group flex flex-col gap-3">
+                <div className="w-10 h-10 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center shrink-0 group-hover:bg-brand-primary group-hover:text-white transition-all duration-300">
                   <svg
-                    width="24"
-                    height="24"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
@@ -112,24 +114,25 @@ export default async function ContactPage() {
                   </svg>
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-text-heading-light dark:text-text-heading-dark">
+                  <h4 className="text-sm font-bold text-text-heading-light dark:text-text-heading-dark">
                     Consultation Hours
                   </h4>
-                  <p className="text-text-para-light dark:text-text-para-dark opacity-80 leading-relaxed">
+                  <p className="text-text-para-light dark:text-text-para-dark opacity-80 leading-relaxed text-xs mt-1">
                     {clinicHours}
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-6">
-                <div className="w-12 h-12 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center shrink-0">
+              {/* Email Card */}
+              <div className="p-5 bg-white dark:bg-card-dark rounded-2xl border border-border-light dark:border-border-dark hover:border-brand-primary/40 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group flex flex-col gap-3">
+                <div className="w-10 h-10 bg-brand-primary/10 text-brand-primary rounded-xl flex items-center justify-center shrink-0 group-hover:bg-brand-primary group-hover:text-white transition-all duration-300">
                   <svg
-                    width="24"
-                    height="24"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
@@ -138,58 +141,23 @@ export default async function ContactPage() {
                     <path d="M22 6l-10 7L2 6" />
                   </svg>
                 </div>
-                <div className="space-y-2">
-                  <h4 className="text-lg font-bold text-text-heading-light dark:text-text-heading-dark">
-                    Email
+                <div>
+                  <h4 className="text-sm font-bold text-text-heading-light dark:text-text-heading-dark">
+                    Email Address
                   </h4>
-                  <a
-                    href={`mailto:${email}`}
-                    className="text-text-para-light dark:text-text-para-dark opacity-80 leading-relaxed hover:text-brand-primary transition-colors"
-                  >
-                    {email}
-                  </a>
-                  <div className="flex items-center gap-2">
-                    <CopyButton value={email} label="Copy email" />
+                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                    <a
+                      href={`mailto:${email}`}
+                      className="text-text-para-light dark:text-text-para-dark opacity-80 leading-relaxed text-xs hover:text-brand-primary transition-colors break-all font-semibold"
+                    >
+                      {email}
+                    </a>
+                    <CopyButton value={email} label="copy" className="px-1.5 py-0.5 text-[8px] rounded-md font-semibold tracking-normal lowercase h-fit border border-border-light dark:border-border-dark shrink-0" />
                   </div>
                 </div>
               </div>
-
-              {appInfo?.mapEmbedUrl ? (
-                <div className="rounded-3xl overflow-hidden border border-border-light dark:border-border-dark">
-                  <iframe
-                    title="Map"
-                    src={appInfo.mapEmbedUrl}
-                    className="w-full h-64"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                </div>
-              ) : null}
-
-              <div className="flex flex-wrap items-center gap-3">
-                {(
-                  [
-                    ["Facebook", social.facebook],
-                    ["Twitter", social.twitter],
-                    ["LinkedIn", social.linkedin],
-                    ["YouTube", social.youtube],
-                    ["Instagram", social.instagram],
-                  ] as const
-                )
-                  .filter(([, url]) => Boolean(url))
-                  .map(([label, url]) => (
-                    <a
-                      key={label}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-2 rounded-full bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs font-bold uppercase tracking-widest text-text-para-light dark:text-text-para-dark hover:border-brand-primary/60 transition-colors"
-                    >
-                      {label}
-                    </a>
-                  ))}
-              </div>
             </div>
+
           </div>
 
           {/* Form Column */}
@@ -198,6 +166,36 @@ export default async function ContactPage() {
           </div>
         </div>
       </div>
+
+      {appInfo?.mapEmbedUrl ? (
+        <section className="max-w-5xl mx-auto w-full pt-8 border-t border-border-light dark:border-border-dark">
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <span className="inline-block px-4 py-1.5 bg-brand-primary/10 text-brand-primary rounded-full text-xs font-bold tracking-widest uppercase mb-3">
+                  Find Our Clinic
+                </span>
+                <h3 className="text-2xl font-bold text-text-heading-light dark:text-text-heading-dark leading-tight">
+                  Interactive Directions
+                </h3>
+              </div>
+              <p className="text-sm text-text-para-light dark:text-text-para-dark opacity-80 max-w-sm leading-relaxed">
+                Located conveniently in Dhaka, with fully equipped modern consulting chambers.
+              </p>
+            </div>
+            
+            <div className="rounded-3xl overflow-hidden border border-border-light dark:border-border-dark shadow-xl h-[350px]">
+              <iframe
+                title="Map"
+                src={appInfo.mapEmbedUrl}
+                className="w-full h-full border-none"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
