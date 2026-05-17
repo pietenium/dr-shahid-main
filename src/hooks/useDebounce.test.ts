@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { useDebounce } from "./useDebounce";
 
 describe("useDebounce", () => {
@@ -25,7 +25,9 @@ describe("useDebounce", () => {
     rerender({ value: "world", delay: 500 });
     expect(result.current).toBe("hello"); // Not updated yet
 
-    vi.advanceTimersByTime(500);
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
     expect(result.current).toBe("world"); // Updated after delay
   });
 
@@ -36,14 +38,20 @@ describe("useDebounce", () => {
     );
 
     rerender({ value: "b", delay: 500 });
-    vi.advanceTimersByTime(300); // Not enough time
+    act(() => {
+      vi.advanceTimersByTime(300); // Not enough time
+    });
     expect(result.current).toBe("a");
 
     rerender({ value: "c", delay: 500 });
-    vi.advanceTimersByTime(300); // Still not enough — timer reset
+    act(() => {
+      vi.advanceTimersByTime(300); // Still not enough — timer reset
+    });
     expect(result.current).toBe("a");
 
-    vi.advanceTimersByTime(200); // Now 500ms since last change
+    act(() => {
+      vi.advanceTimersByTime(200); // Now 500ms since last change
+    });
     expect(result.current).toBe("c");
   });
 });

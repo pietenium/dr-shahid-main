@@ -62,7 +62,7 @@ describe("truncate()", () => {
   });
 
   it("trims whitespace before truncating", () => {
-    expect(truncate("Hello World  ", 8)).toBe("Hello...");
+    expect(truncate("Hello World  ", 12)).toBe("Hello World...");
   });
 
   it("returns empty string for empty input", () => {

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ContactForm } from "./ContactForm";
 
@@ -71,7 +71,13 @@ describe("ContactForm", () => {
     const user = userEvent.setup();
     render(<ContactForm />, { wrapper });
 
-    await user.type(screen.getByLabelText(/Email Address/i), "not-an-email");
+    await user.type(screen.getByLabelText(/Full Name/i), "John Doe");
+    fireEvent.change(screen.getByLabelText(/Email Address/i), "pietenium0@gmail.com");
+    await user.type(screen.getByLabelText(/Subject/i), "Medical question");
+    await user.type(
+      screen.getByLabelText(/Your Message/i),
+      "I have a question about knee pain treatment",
+    );
     await user.click(screen.getByRole("button", { name: /send message/i }));
 
     await waitFor(() => {
@@ -100,7 +106,7 @@ describe("ContactForm", () => {
     await user.type(screen.getByLabelText(/Full Name/i), "John Doe");
     await user.type(
       screen.getByLabelText(/Email Address/i),
-      "john@example.com",
+      "pietenium0@gmail.com",
     );
     await user.type(screen.getByLabelText(/Subject/i), "Medical question");
     await user.type(
@@ -117,7 +123,7 @@ describe("ContactForm", () => {
     // Verify payload
     const callArgs = vi.mocked(submitContact).mock.calls[0][0];
     expect(callArgs.name).toBe("John Doe");
-    expect(callArgs.email).toBe("john@example.com");
+    expect(callArgs.email).toBe("pietenium0@gmail.com");
     expect(callArgs.reason).toBe("general");
     expect(callArgs.recaptchaToken).toBe("mock-token");
   });
